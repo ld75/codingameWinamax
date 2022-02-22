@@ -1,24 +1,25 @@
 package com.winamax.golf;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class MapAnalyzer {
 
-    public List<String> getPath(String dimensions, List<String> rows) {
+    public List<String> getPath(String dimensions, List<String> rows) throws TrouNonTrouveException {
         int width= getWith(dimensions);
         List<String> resultRows = analyseRows(rows, width);
         return resultRows;
     }
 
-    private List<String> analyseRows(List<String> rows, int width) {
+    private List<String> analyseRows(List<String> rows, int width) throws TrouNonTrouveException {
         List<String> resultRows= new ArrayList<>();
+        int rownum=0;
         for(String row : rows) {
-            String rowWithDirection = findHorizontalDirection(width, row);
+            String rowWithDirection = findHorizontalDirection(width, row,rownum,rows);
             row = removeAllH(rowWithDirection);
             resultRows.add(row);
+            rownum++;
         }
         return resultRows;
     }
@@ -27,17 +28,31 @@ public class MapAnalyzer {
         return direction.replace("H", ".");
     }
 
-    public String findHorizontalDirection(int width, String row) {
+    public String findHorizontalDirection(int width, String row,int rownum,List<String>rows) throws TrouNonTrouveException {
         String direction="";
         List<Integer> balles = getBallesFromRow(row);
         for(Integer balle:balles) {
             String thisballe = Integer.toString(balle);
-            if (row.indexOf("H")==-1) direction="V";
+            if (row.indexOf("H")==-1) direction=returnDirectionOfOtherRowhavingH(rownum,rows);
             else if (row.indexOf("H") > row.indexOf(thisballe)) direction = ">";
             else direction = "<";
             row = row.replace(thisballe,direction);
         }
         return row;
+    }
+
+    private String returnDirectionOfOtherRowhavingH(int rownum, List<String> rows) throws TrouNonTrouveException {
+        if (returnOtherRowhavingH(rownum,rows)>rownum) return "V";
+        else return "^";
+    }
+
+    public int returnOtherRowhavingH(int rownum, List<String> rows) throws TrouNonTrouveException {
+        for (int rowidx=0; rowidx<rows.size(); rowidx++)
+        {
+            if (rowidx==rownum)continue;
+            if (rows.get(rowidx).contains("H")) return rowidx;
+        }
+        throw new TrouNonTrouveException();
     }
 
     private int getWith(String dimensions) {
