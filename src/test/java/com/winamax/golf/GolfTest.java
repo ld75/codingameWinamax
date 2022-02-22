@@ -1,16 +1,33 @@
 package com.winamax.golf;
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 public class GolfTest {
+    MapAnalyzer mapAnalyzer = new MapAnalyzer();
+    @Test
+    public void findPathHorizontally()
+    {
+        String res = mapAnalyzer.findHorizontalDirection(2, "1H");
+        Assertions.assertEquals(">.",res);
+    }
+
+
 
     @Test
+    @Disabled
     public void test1()
     {
         //taille: 2 1
         //ligne: 1H
         //attendu: >.
+        String res = mapAnalyzer.getPath("2 1", List.of("1H"));
+        Assertions.assertEquals(">.",res);
     }
+
     @Test
     public void test2()
     {
