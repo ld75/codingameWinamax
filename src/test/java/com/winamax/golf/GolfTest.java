@@ -1,33 +1,71 @@
 package com.winamax.golf;
 
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class GolfTest {
     MapAnalyzer mapAnalyzer = new MapAnalyzer();
     @Test
-    public void findPathHorizontally()
+    public void findPathHorizontallyRight()
     {
         String res = mapAnalyzer.findHorizontalDirection(2, "1H");
-        Assertions.assertEquals(">.",res);
+        Assertions.assertEquals(">H",res);
+    }
+    @Test
+    public void getBalleFromRow()
+    {
+        Assertions.assertEquals(Arrays.asList(Integer.valueOf(2)), mapAnalyzer.getBallesFromRow("H....2...H"));
+    }
+    @Test
+    public void getBalleFromRow3()
+    {
+        Assertions.assertEquals(Arrays.asList(Integer.valueOf(1),Integer.valueOf(2),Integer.valueOf(3)), mapAnalyzer.getBallesFromRow("H1...2..3H"));
+    }
+    @Test
+    public void findPathHorizontallyAnyNumber()
+    {
+        String res = mapAnalyzer.findHorizontalDirection(2, "H.....5");
+        Assertions.assertEquals("H.....<",res);
+    }
+    @Test
+    public void deuBallesSurUnPlan()
+    {
+        String res = mapAnalyzer.findHorizontalDirection(2, "H..3..5");
+        Assertions.assertEquals("H..<..<",res);
+    }
+    @Test
+    public void findPathHorizontallyTooFar()
+    {
+        String res = mapAnalyzer.findHorizontalDirection(2, "H.....3");
+        Assertions.assertEquals("H.....<",res);
     }
 
-
-
     @Test
-    @Disabled
     public void test1()
     {
         //taille: 2 1
         //ligne: 1H
         //attendu: >.
-        String res = mapAnalyzer.getPath("2 1", List.of("1H"));
-        Assertions.assertEquals(">.",res);
+        List<String> res = mapAnalyzer.getPath("2 1", List.of("1H"));
+        Assertions.assertEquals(">.",res.get(0));
     }
-
+    @Test
+    public void deuxDimensionsSimple()
+    {
+        List<String> res = mapAnalyzer.getPath("2 2",List.of("1H",".."));
+        List<String> expect = List.of(">.", "..");
+        Assertions.assertEquals(expect,res);
+    }
+    @Test
+    public void deuxDimensionsRemplies()
+    {
+        List<String> res = mapAnalyzer.getPath("2 2",List.of("1.","H."));
+        List<String> expect = List.of("V.", "..");
+        Assertions.assertEquals(expect,res);
+    }
     @Test
     public void test2()
     {
@@ -36,6 +74,7 @@ public class GolfTest {
         //ligne: ..H
         //ligne: .H1
         //attendu: v..
+
     }
     @Test
     public void test3()
