@@ -9,7 +9,45 @@ public class MapAnalyzer {
     public List<String> getPath(String dimensions, List<String> rows) throws TrouNonTrouveException {
         int width= getWith(dimensions);
         List<String> resultRows = analyseRows(rows, width);
-        return resultRows;
+        if (isHTrouve(resultRows)) return removeAllH(resultRows);
+        else return null;
+    }
+
+    public boolean isHTrouve(List<String> resultRows) throws TrouNonTrouveException {
+        Integer[] positionHXY = trouveHPosition(resultRows);
+        Integer y = positionHXY[1];
+        Integer x = positionHXY[0];
+        char droite = '>';
+        if (isNOContains(resultRows, y, x, droite)
+            || (y<resultRows.size()-1 && resultRows.get(y).charAt(x +1)=='<')
+                || (y>0 && resultRows.get(y-1).charAt(x)=='V')
+                || (y<resultRows.size()-1 && resultRows.get(y+1).charAt(x)=='^')) return true;
+        return false;
+    }
+
+    private boolean isNOContains(List<String> resultRows, Integer y, Integer x, char droite) {
+        return y > 0 && x > 0 && resultRows.get(y).charAt(x - 1) == droite;
+    }
+    private boolean isNEContains(List<String> resultRows, Integer y, Integer x, char droite) {
+        return y > 0 && x < resultRows.get(y).length()-1 && resultRows.get(y).charAt(x + 1) == droite;
+    }
+    private boolean isSEContains(List<String> resultRows, Integer y, Integer x, char droite) {
+        return y < resultRows.size()-1 && x < resultRows.get(y).length()-1 && resultRows.get(y+1).charAt(x + 1) == droite;
+    }
+    private boolean isSOContains(List<String> resultRows, Integer y, Integer x, char droite) {
+        return y < resultRows.size()-1  && x > 0  && resultRows.get(y+1).charAt(x + 1) == droite;
+    }
+
+    public Integer[] trouveHPosition(List<String> resultRows) throws TrouNonTrouveException {
+        for(int y=0; y<resultRows.size(); y++){
+            int x=resultRows.get(y).indexOf("H");
+            if (x!=-1) return new Integer[]{x,y};
+        }
+        throw new TrouNonTrouveException();
+    }
+
+    private List<String> removeAllH(List<String> resultRows) {
+        return resultRows.stream().map(this::removeAllH).collect(Collectors.toList());
     }
 
     private List<String> analyseRows(List<String> rows, int width) throws TrouNonTrouveException {
@@ -17,8 +55,7 @@ public class MapAnalyzer {
         int rownum=0;
         for(String row : rows) {
             String rowWithDirection = findHorizontalDirection(width, row,rownum,rows);
-            row = removeAllH(rowWithDirection);
-            resultRows.add(row);
+            resultRows.add(rowWithDirection);
             rownum++;
         }
         return resultRows;

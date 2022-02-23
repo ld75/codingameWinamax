@@ -56,8 +56,11 @@ public class GolfTest {
     }
     @Test
     public void deuxDimensionsRempliesCibleEnBas() throws TrouNonTrouveException {
-        List<String> res = mapAnalyzer.getPath("2 2",List.of("1.","H."));
-        List<String> expect = List.of("V.", "..");
+        List<String> rows = List.of("1.",
+                                    "H.");
+        List<String> res = mapAnalyzer.getPath("2 2", rows);
+        List<String> expect = List.of("V.",
+                                      "..");
         Assertions.assertEquals(expect,res);
     }
 
@@ -86,8 +89,26 @@ public class GolfTest {
                                     "H..");
         List<String> res = mapAnalyzer.getPath("2 2", rows);
         List<String> expect = List.of("..V",
-                                      "...");
+                                      ".<<");
         Assertions.assertEquals(expect,res);
+    }
+    @Test
+    public void isHTrouve_Non() throws TrouNonTrouveException {
+        List<String> rows = List.of("..1",
+                                    "H>.");
+        Assertions.assertFalse(mapAnalyzer.isHTrouve(rows));
+    }
+    @Test
+    public void isHTrouve_LoinNon() throws TrouNonTrouveException {
+        List<String> rows = List.of("..1",
+                "H.>");
+        Assertions.assertFalse(mapAnalyzer.isHTrouve(rows));
+    }
+    @Test
+    public void isHTrouve_Oui() throws TrouNonTrouveException {
+        List<String> rows = List.of("..1",
+                "H<.");
+        Assertions.assertTrue(mapAnalyzer.isHTrouve(rows));
     }
     @Test
     public void test2()
