@@ -1,43 +1,67 @@
 package com.winamax.golf;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class GolfTest {
     MapAnalyzer mapAnalyzer = new MapAnalyzer();
     @Test
     public void findPathHorizontallyRight() throws TrouNonTrouveException {
-        String res = mapAnalyzer.findHorizontalDirection(2, "1H",0,new ArrayList<>());
-        Assertions.assertEquals(">H",res);
+        Ball whateverball = new Ball(1, 0, 0);
+        List<String> rows = Arrays.asList("1H");
+        mapAnalyzer.findHorizontalAndVerticalDirection(whateverball, rows);
+        Assertions.assertEquals(">H",rows.get(0));
+        Assertions.assertEquals(0,whateverball.score);
+        Assertions.assertEquals(1,whateverball.x);
+        Assertions.assertEquals(0,whateverball.y);
     }
     @Test
     public void getBalleFromRow()
     {
-        Assertions.assertEquals(Arrays.asList(Integer.valueOf(2)), mapAnalyzer.getBallesFromRow("H....2...H"));
+        List<Ball> balles = mapAnalyzer.getBallesFromRow("H....2...H",0);
+        Assertions.assertEquals(2, balles.get(0).score);
+        Assertions.assertEquals(0, balles.get(0).y);
+        Assertions.assertEquals(5, balles.get(0).x);
     }
     @Test
     public void getBalleFromRow3()
     {
-        Assertions.assertEquals(Arrays.asList(Integer.valueOf(1),Integer.valueOf(2),Integer.valueOf(3)), mapAnalyzer.getBallesFromRow("H1...2..3H"));
+        List<Ball> ballesFromRow = mapAnalyzer.getBallesFromRow("H1...2..3H",0);
+        Assertions.assertEquals(Arrays.asList(1,2,3), ballesFromRow.stream().map(b->b.score).collect(Collectors.toList()));
     }
     @Test
     public void findPathHorizontallyAnyNumber() throws TrouNonTrouveException {
-        String res = mapAnalyzer.findHorizontalDirection(2, "H.....5",0,new ArrayList<>());
-        Assertions.assertEquals("H.....<",res);
+        Ball whateverball= new Ball(5,6,0);
+        List<String> rows = Arrays.asList("H.....5");
+        mapAnalyzer.findHorizontalAndVerticalDirection(whateverball, rows);
+        Assertions.assertEquals("H.....<",rows.get(0));
+        Assertions.assertEquals(4,whateverball.score);
+        Assertions.assertEquals(5,whateverball.x);
+        Assertions.assertEquals(0,whateverball.y);
     }
     @Test
-    public void deuBallesSurUnPlan() throws TrouNonTrouveException {
-        String res = mapAnalyzer.findHorizontalDirection(2, "H..3..5",0,new ArrayList<>());
-        Assertions.assertEquals("H..<..<",res);
+    @Disabled
+    public void deuxBallesSurUnPlan() throws TrouNonTrouveException {
+        Ball balle= new Ball(0,0,0);
+        List<String> rows = Arrays.asList("H..1..5");
+        mapAnalyzer.findHorizontalAndVerticalDirection(balle, rows);
+        Assertions.assertEquals("H..<..<",rows.get(0));
     }
     @Test
     public void findPathHorizontallyTooFar() throws TrouNonTrouveException {
-        String res = mapAnalyzer.findHorizontalDirection(2, "H.....3",0,new ArrayList<>());
-        Assertions.assertEquals("H.....<",res);
+        Ball balle=new Ball(3,6,0);
+        List<String> rows = Arrays.asList("H.....3");
+        mapAnalyzer.findHorizontalAndVerticalDirection(balle, rows);
+        Assertions.assertEquals("H.....<",rows.get(0));
+        Assertions.assertEquals(2,balle.score);
+        Assertions.assertEquals(5,balle.x);
+        Assertions.assertEquals(0,balle.y);
     }
 
     @Test
@@ -45,20 +69,25 @@ public class GolfTest {
         //taille: 2 1
         //ligne: 1H
         //attendu: >.
-        List<String> res = mapAnalyzer.getPath("2 1", List.of("1H"));
+        List<String> rows = new ArrayList<>(List.of("1H"));
+        Ball balle = mapAnalyzer.trouverBalles(rows).get(0);
+        List<String> res = mapAnalyzer.getPath(balle, rows);
         Assertions.assertEquals(">.",res.get(0));
     }
     @Test
     public void deuxDimensionsSimple() throws TrouNonTrouveException {
-        List<String> res = mapAnalyzer.getPath("2 2",List.of("1H",".."));
+        List<String> rows = new ArrayList<>(List.of("1H", ".."));
+        Ball balle = mapAnalyzer.trouverBalles(rows).get(0);
+        List<String> res = mapAnalyzer.getPath(balle, rows);
         List<String> expect = List.of(">.", "..");
         Assertions.assertEquals(expect,res);
     }
     @Test
     public void deuxDimensionsRempliesCibleEnBas() throws TrouNonTrouveException {
-        List<String> rows = List.of("1.",
-                                    "H.");
-        List<String> res = mapAnalyzer.getPath("2 2", rows);
+        List<String> rows = new ArrayList<>(List.of("1.",
+                                    "H."));
+        Ball balle = mapAnalyzer.trouverBalles(rows).get(0);
+        List<String> res = mapAnalyzer.getPath(balle, rows);
         List<String> expect = List.of("V.",
                                       "..");
         Assertions.assertEquals(expect,res);
@@ -76,22 +105,119 @@ public class GolfTest {
     }
     @Test
     public void deuxDimensionsRempliesCibleEnHaut() throws TrouNonTrouveException {
-        List<String> rows = List.of("H.",
-                                    "1.");
-        List<String> res = mapAnalyzer.getPath("2 2", rows);
+        List<String> rows = new ArrayList<>(List.of("H.",
+                                    "1."));
+        Ball balle = mapAnalyzer.trouverBalles(rows).get(0);
+        List<String> res = mapAnalyzer.getPath(balle, rows);
         List<String> expect = List.of("..",
                                       "^.");
         Assertions.assertEquals(expect,res);
     }
     @Test
-    public void troisDimensionsRempliesCibleEnBas() throws TrouNonTrouveException {
-        List<String> rows = List.of("..1",
+    public void zeroballes_trouverBalles_listevide()
+    {
+        List<String> rows = List.of("..X",
                                     "H..");
-        List<String> res = mapAnalyzer.getPath("2 2", rows);
+        List<Ball> balles = mapAnalyzer.trouverBalles(rows);
+        Assertions.assertTrue(balles.size()==0);
+    }
+    @Test
+    public void uneBalle_trouverBalles_balleEtPosition()
+    {
+        List<String> rows = List.of("..2",
+                "H..");
+        List<Ball> balles = mapAnalyzer.trouverBalles(rows);
+        Assertions.assertTrue(balles.size()==1);
+        Assertions.assertTrue(balles.get(0).x==2);
+        Assertions.assertTrue(balles.get(0).y==0);
+    }
+
+    @Test
+    public void atPosition0_changeCharOfString(){
+        String str= "mlqkjsdf";
+        Assertions.assertEquals("Ulqkjsdf",mapAnalyzer.changeCharAt(str,0,"U"));
+    }
+    @Test
+    public void atPositionEnd_changeCharOfString(){
+        String str= "mlqkjsdf";
+        Assertions.assertEquals("mlqkjsdU",mapAnalyzer.changeCharAt(str,8,"U"));
+    }
+    @Test
+    public void atPosition_changeCharOfString(){
+        String str= "mlqkjsdf";
+        Assertions.assertEquals("mlqkUsdf",mapAnalyzer.changeCharAt(str,4,"U"));
+    }
+    @Test
+    public void troisDimensionsRempliesCibleEnBas() throws TrouNonTrouveException {
+        List<String> rows = new ArrayList<>(List.of("..1",
+                                    "H.."));
+        Ball balle = mapAnalyzer.trouverBalles(rows).get(0);
+        List<String> res = mapAnalyzer.getPath(balle, rows);
         List<String> expect = List.of("..V",
                                       ".<<");
         Assertions.assertEquals(expect,res);
     }
+    @Test
+    public void invalidPosition1_changeBallPosition_dontChangePosition(){
+        List<String> rows = List.of("...",
+                                       "...");
+        Ball balle = new Ball(1, 0, 0);
+        mapAnalyzer.changeBallPosition(balle,"<", rows);
+        Assertions.assertEquals(1,balle.score);
+        Assertions.assertEquals(0,balle.x);
+        Assertions.assertEquals(0,balle.y);
+    }
+    @Test
+    public void invalidPosition2_changeBallPosition_dontChangePosition(){
+        List<String> rows = List.of("...",
+                "...");
+        Ball balle = new Ball(1, 2, 0);
+        mapAnalyzer.changeBallPosition(balle,">", rows);
+        Assertions.assertEquals(1,balle.score);
+        Assertions.assertEquals(2,balle.x);
+        Assertions.assertEquals(0,balle.y);
+    }
+    @Test
+    public void invalidPosition3_changeBallPosition_dontChangePosition(){
+        List<String> rows = List.of("...",
+                "...");
+        Ball balle = new Ball(1, 1, 1);
+        mapAnalyzer.changeBallPosition(balle,"V", rows);
+        Assertions.assertEquals(1,balle.score);
+        Assertions.assertEquals(1,balle.x);
+        Assertions.assertEquals(1,balle.y);
+    }
+    @Test
+    public void invalidPosition4_changeBallPosition_dontChangePosition(){
+        List<String> rows = List.of("...",
+                "...");
+        Ball balle = new Ball(1, 1, 0);
+        mapAnalyzer.changeBallPosition(balle,"^", rows);
+        Assertions.assertEquals(1,balle.score);
+        Assertions.assertEquals(1,balle.x);
+        Assertions.assertEquals(0,balle.y);
+    }
+    @Test
+    public void gootPosition_changeBallPosition_ballMoves(){
+        List<String> rows = List.of("...",
+                                    "...");
+        Ball balle = new Ball(4, 1, 0);
+        mapAnalyzer.changeBallPosition(balle,">", rows);
+        AssertNewPositions(balle, 3, 2, 0);
+        mapAnalyzer.changeBallPosition(balle,"V", rows);
+        AssertNewPositions(balle, 2, 2, 1);
+        mapAnalyzer.changeBallPosition(balle,"<", rows);
+        AssertNewPositions(balle, 1, 1, 1);
+        mapAnalyzer.changeBallPosition(balle,"^", rows);
+        AssertNewPositions(balle, 0, 1, 0);
+    }
+
+    private void AssertNewPositions(Ball balle, int newscore, int newX, int newY) {
+        Assertions.assertEquals(newscore, balle.score);
+        Assertions.assertEquals(newX, balle.x);
+        Assertions.assertEquals(newY, balle.y);
+    }
+
     @Test
     public void horsChamp_identifie_erreur()
     {
