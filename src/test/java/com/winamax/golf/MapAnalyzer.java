@@ -10,18 +10,28 @@ public class MapAnalyzer {
         int width= getWith(dimensions);
         List<String> resultRows = analyseRows(rows, width);
         if (isHTrouve(resultRows)) return removeAllH(resultRows);
-        else return null;
+        else return null;//TODO recursif
     }
 
     public boolean isHTrouve(List<String> resultRows) throws TrouNonTrouveException {
         Integer[] positionHXY = trouveHPosition(resultRows);
         Integer y = positionHXY[1];
         Integer x = positionHXY[0];
-        char droite = '>';
-        if (isNOContains(resultRows, y, x, droite)
-            || (y<resultRows.size()-1 && resultRows.get(y).charAt(x +1)=='<')
-                || (y>0 && resultRows.get(y-1).charAt(x)=='V')
-                || (y<resultRows.size()-1 && resultRows.get(y+1).charAt(x)=='^')) return true;
+        try {
+            System.out.println(x+"  "+y+" ");
+            System.out.println(identifie(resultRows,x,y+1)== '^');
+        } catch (HorsChampException e) {
+            e.printStackTrace();
+        }
+        try {
+            if(identifie(resultRows,x+1,y)== '<'
+                || identifie(resultRows,x-1,y)== '>'
+                || identifie(resultRows,x,y-1)== 'V'
+                || identifie(resultRows,x,y+1)== '^')
+                return true;
+        } catch (HorsChampException e) {
+            return false;
+        }
         return false;
     }
 
@@ -101,5 +111,14 @@ public class MapAnalyzer {
         row.chars().mapToObj(c -> (char) c).collect(Collectors.toList())
                 .forEach(x->{if(Character.isDigit(x)) balles.add(Integer.parseInt(Character.toString(x)));});
         return balles;
+    }
+
+    public char identifie(List<String> rows, int x, int y) throws HorsChampException {
+        if (x<0 || y<0 ||y>=rows.size() ||x>=rows.get(0).length()) throw new HorsChampException();
+        return rows.get(y).charAt(x);
+        /*return rows.get(0)y > 0 && x > 0 && resultRows.get(y).charAt(x - 1) == droite;
+                || (y<resultRows.size()-1 && resultRows.get(y).charAt(x +1)=='<')
+                || (y>0 && resultRows.get(y-1).charAt(x)=='V')
+                || (y<resultRows.size()-1 && resultRows.get(y+1).charAt(x)=='^')) return true;*/
     }
 }

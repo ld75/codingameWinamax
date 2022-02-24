@@ -93,21 +93,42 @@ public class GolfTest {
         Assertions.assertEquals(expect,res);
     }
     @Test
+    public void horsChamp_identifie_erreur()
+    {
+        List < String > rows = List.of("abc",
+                                       "fed");
+        Assertions.assertThrows(HorsChampException.class,()->{mapAnalyzer.identifie(rows, -1, -1);});
+        Assertions.assertThrows(HorsChampException.class,()->{mapAnalyzer.identifie(rows, 3, 2);});
+        Assertions.assertThrows(HorsChampException.class,()->{mapAnalyzer.identifie(rows, 3, 1);});
+        Assertions.assertThrows(HorsChampException.class,()->{mapAnalyzer.identifie(rows, 2, 2);});
+    }
+    @Test
+    public void positionEnChamp_identifie_char() throws HorsChampException {
+        List < String > rows = List.of("abc",
+                "fed");
+        Assertions.assertEquals('a',mapAnalyzer.identifie(rows, 0, 0));
+        Assertions.assertEquals('b',mapAnalyzer.identifie(rows, 1, 0));
+        Assertions.assertEquals('c',mapAnalyzer.identifie(rows, 2, 0));
+        Assertions.assertEquals('f',mapAnalyzer.identifie(rows, 0, 1));
+        Assertions.assertEquals('e',mapAnalyzer.identifie(rows, 1, 1));
+        Assertions.assertEquals('d',mapAnalyzer.identifie(rows, 2, 1));
+    }
+    @Test
     public void isHTrouve_Non() throws TrouNonTrouveException {
         List<String> rows = List.of("..1",
                                     "H>.");
         Assertions.assertFalse(mapAnalyzer.isHTrouve(rows));
     }
     @Test
-    public void isHTrouve_LoinNon() throws TrouNonTrouveException {
-        List<String> rows = List.of("..1",
-                "H.>");
+    public void isHTrouve_Oui1() throws TrouNonTrouveException {
+        List<String> rows = List.of("V..",
+                                    "H..");
         Assertions.assertFalse(mapAnalyzer.isHTrouve(rows));
     }
     @Test
-    public void isHTrouve_Oui() throws TrouNonTrouveException {
-        List<String> rows = List.of("..1",
-                "H<.");
+    public void isHTrouve_Oui2() throws TrouNonTrouveException {
+        List<String> rows = List.of("H..",
+                                    "^..");
         Assertions.assertTrue(mapAnalyzer.isHTrouve(rows));
     }
     @Test
