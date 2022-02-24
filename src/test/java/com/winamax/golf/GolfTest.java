@@ -97,10 +97,10 @@ public class GolfTest {
     {
         List < String > rows = List.of("abc",
                                        "fed");
-        Assertions.assertThrows(HorsChampException.class,()->{mapAnalyzer.identifie(rows, -1, -1);});
-        Assertions.assertThrows(HorsChampException.class,()->{mapAnalyzer.identifie(rows, 3, 2);});
-        Assertions.assertThrows(HorsChampException.class,()->{mapAnalyzer.identifie(rows, 3, 1);});
-        Assertions.assertThrows(HorsChampException.class,()->{mapAnalyzer.identifie(rows, 2, 2);});
+        Assertions.assertEquals('E',mapAnalyzer.identifie(rows, -1, -1));
+        Assertions.assertEquals('E',mapAnalyzer.identifie(rows, 3, 2));
+        Assertions.assertEquals('E',mapAnalyzer.identifie(rows, 3, 1));
+        Assertions.assertEquals('E',mapAnalyzer.identifie(rows, 2, 2));
     }
     @Test
     public void positionEnChamp_identifie_char() throws HorsChampException {
@@ -123,7 +123,7 @@ public class GolfTest {
     public void isHTrouve_Oui1() throws TrouNonTrouveException {
         List<String> rows = List.of("V..",
                                     "H..");
-        Assertions.assertFalse(mapAnalyzer.isHTrouve(rows));
+        Assertions.assertTrue(mapAnalyzer.isHTrouve(rows));
     }
     @Test
     public void isHTrouve_Oui2() throws TrouNonTrouveException {

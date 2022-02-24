@@ -10,28 +10,19 @@ public class MapAnalyzer {
         int width= getWith(dimensions);
         List<String> resultRows = analyseRows(rows, width);
         if (isHTrouve(resultRows)) return removeAllH(resultRows);
-        else return null;//TODO recursif
+        System.out.println(resultRows);
+        return null;//return getPath(dimensions,rows);
     }
 
     public boolean isHTrouve(List<String> resultRows) throws TrouNonTrouveException {
         Integer[] positionHXY = trouveHPosition(resultRows);
         Integer y = positionHXY[1];
         Integer x = positionHXY[0];
-        try {
-            System.out.println(x+"  "+y+" ");
-            System.out.println(identifie(resultRows,x,y+1)== '^');
-        } catch (HorsChampException e) {
-            e.printStackTrace();
-        }
-        try {
             if(identifie(resultRows,x+1,y)== '<'
                 || identifie(resultRows,x-1,y)== '>'
                 || identifie(resultRows,x,y-1)== 'V'
                 || identifie(resultRows,x,y+1)== '^')
                 return true;
-        } catch (HorsChampException e) {
-            return false;
-        }
         return false;
     }
 
@@ -113,8 +104,8 @@ public class MapAnalyzer {
         return balles;
     }
 
-    public char identifie(List<String> rows, int x, int y) throws HorsChampException {
-        if (x<0 || y<0 ||y>=rows.size() ||x>=rows.get(0).length()) throw new HorsChampException();
+    public char identifie(List<String> rows, int x, int y) {
+        if (x<0 || y<0 ||y>=rows.size() ||x>=rows.get(0).length()) return 'E';
         return rows.get(y).charAt(x);
         /*return rows.get(0)y > 0 && x > 0 && resultRows.get(y).charAt(x - 1) == droite;
                 || (y<resultRows.size()-1 && resultRows.get(y).charAt(x +1)=='<')
