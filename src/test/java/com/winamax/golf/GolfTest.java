@@ -147,7 +147,7 @@ public class GolfTest {
     }
 
     @Test
-    public void invalidPosition1_changeBallPosition_dontChangePosition(){
+    public void invalidPosition1_changeBallPosition_dontChangePosition() throws CanootMoveHereException {
         List<String> rows = List.of("...",
                                        "...");
         Ball balle = new Ball(1, 0, 0);
@@ -157,7 +157,7 @@ public class GolfTest {
         Assertions.assertEquals(0,balle.y);
     }
     @Test
-    public void invalidPosition2_changeBallPosition_dontChangePosition(){
+    public void invalidPosition2_changeBallPosition_dontChangePosition() throws CanootMoveHereException {
         List<String> rows = List.of("...",
                 "...");
         Ball balle = new Ball(1, 2, 0);
@@ -167,7 +167,7 @@ public class GolfTest {
         Assertions.assertEquals(0,balle.y);
     }
     @Test
-    public void invalidPosition3_changeBallPosition_dontChangePosition(){
+    public void invalidPosition3_changeBallPosition_dontChangePosition() throws CanootMoveHereException {
         List<String> rows = List.of("...",
                 "...");
         Ball balle = new Ball(1, 1, 1);
@@ -177,7 +177,7 @@ public class GolfTest {
         Assertions.assertEquals(1,balle.y);
     }
     @Test
-    public void invalidPosition4_changeBallPosition_dontChangePosition(){
+    public void invalidPosition4_changeBallPosition_dontChangePosition() throws CanootMoveHereException {
         List<String> rows = List.of("...",
                 "...");
         Ball balle = new Ball(1, 1, 0);
@@ -187,7 +187,7 @@ public class GolfTest {
         Assertions.assertEquals(0,balle.y);
     }
     @Test
-    public void gootPosition_changeBallPosition_ballMoves(){
+    public void gootPosition_changeBallPosition_ballMoves() throws CanootMoveHereException {
         List<String> rows = List.of("...",
                                     "...");
         Ball balle = new Ball(4, 1, 0);
@@ -218,7 +218,7 @@ public class GolfTest {
         Assertions.assertEquals('E',mapAnalyzer.identifie(rows, 2, 2));
     }
     @Test
-    public void positionEnChamp_identifie_char() throws HorsChampException {
+    public void positionEnChamp_identifie_char(){
         List < String > rows = List.of("abc",
                 "fed");
         Assertions.assertEquals('a',mapAnalyzer.identifie(rows, 0, 0));
@@ -327,7 +327,19 @@ public class GolfTest {
         List<String> res = mapAnalyzer.jouerChaqueCouple( rows);
         Assertions.assertEquals(expect,res);
     }
-
+@Test
+public void flechesEtTroisCroisees_jeu_eviterCroisementFlechesEtTrous() throws TrouNonTrouveException, JeuIncompletException {
+    List<String> rows = new ArrayList(List.of(
+            "4....",
+            "4...H",
+            "....H"));
+        List<String> res = mapAnalyzer.jouerChaqueCouple( rows);
+    List<String> expect = new ArrayList(List.of(
+            ">V...",
+            "V>>>.",
+            ">>>>."));
+    Assertions.assertEquals(expect,res);
+    }
     @Test
     public void test3() throws TrouNonTrouveException, JeuIncompletException {
         //taille: 5 5

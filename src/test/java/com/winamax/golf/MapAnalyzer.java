@@ -68,42 +68,53 @@ public class MapAnalyzer {
             if (balle.y!=trou.y) direction=returnDirectionOfOtherRowhavingH(balle.y,rows,trou.y);
             else if (trou.x > balle.x) direction = ">";
             else direction = "<";
+        if (!isBallCanMoove(balle, direction, rows)) throw new TrouNonTrouveException("ne peut pas aller ici");
         rows.set(balle.y, changeCharAt( rows.get(balle.y),balle.x,direction));
-
         changeBallPosition(balle, direction,rows);
     }
 
-    public void changeBallPosition(Ball balle, String direction, List<String> rows) {
+    public void changeBallPosition(Ball balle, String direction, List<String> rows){
         if (isBallCanMoove(balle, direction, rows)) balle.score--;
         if (canMooveRight(balle, direction, rows)) balle.x++;
-        if (canMooveLeft(balle, direction)) balle.x--;
+        if (canMooveLeft(balle, direction, rows)) balle.x--;
         if (canMooveDown(balle, direction, rows)) balle.y++;
-        if (canMooveUp(balle, direction)) balle.y--;
+        if (canMooveUp(balle, direction, rows)) balle.y--;
     }
 
     private boolean isBallCanMoove(Ball balle, String direction, List<String> rows) {
-        return canMooveDown(balle, direction, rows) || canMooveLeft(balle, direction) || canMooveRight(balle, direction, rows) || canMooveUp(balle, direction);
+        return canMooveDown(balle, direction, rows) || canMooveLeft(balle, direction,rows) || canMooveRight(balle, direction, rows) || canMooveUp(balle, direction,rows);
     }
 
-    private boolean canMooveUp(Ball balle, String direction) {
-        return direction.equals("^") && balle.y > 0;
+    private boolean canMooveUp(Ball balle, String direction, List<String> rows) {
+        return direction.equals("^") && balle.y > 0 &&
+                isValidDest(balle.x,balle.y-1, rows);
     }
 
     private boolean canMooveDown(Ball balle, String direction, List<String> rows) {
-        return direction.equals("V") && balle.y < rows.size()-1;
+        return (direction.equals("V") && balle.y < rows.size()-1 &&
+                isValidDest(balle.x,balle.y+1, rows));
     }
 
-    private boolean canMooveLeft(Ball balle, String direction) {
-        return direction.equals("<") && balle.x > 0;
+    private boolean isValidDest(int x,int y, List<String> rows) {
+        return identifie(rows, x, y) == '.' || identifie(rows, x, y) == 'X' || identifie(rows, x, y) == 'H';
+    }
+
+    private boolean canMooveLeft(Ball balle, String direction, List<String> rows) {
+        return direction.equals("<") && balle.x > 0 &&
+                isValidDest(balle.x-1,balle.y, rows);
     }
 
     private boolean canMooveRight(Ball balle, String direction, List<String> rows) {
-        return direction.equals(">") && rows.get(0).length()-1 > balle.x;
+        return direction.equals(">") && rows.get(0).length()-1 > balle.x
+                &&
+                isValidDest(balle.x+1,balle.y, rows);
     }
 
     private String returnDirectionOfOtherRowhavingH(int balleY, List<String> rows, Integer trouY){
-        if (trouY >balleY) return "V";
-        else return "^";
+        String direction;
+        if (trouY >balleY) direction = "V";
+        else direction ="^";
+        return direction;
     }
     private int getWith(String dimensions) {
         return Integer.parseInt(dimensions.split(" ")[0]);
