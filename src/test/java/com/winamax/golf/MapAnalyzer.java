@@ -153,4 +153,18 @@ public class MapAnalyzer {
         if (at==str.length()) return str.substring(0,at-1).concat(by).concat(str.substring(at));
         return str.substring(0,at).concat(by).concat(str.substring(at+1));
     }
+
+    public List<Trou> trouverHs(List<String> rows) throws TrouNonTrouveException {
+        List<Trou> trous = new ArrayList<>();
+        Integer[] hPosition = trouveHPosition(rows);
+        trous.add(new Trou(hPosition));
+        return trous;
+    }
+
+    public Ball preparerJeuChoixballe(List<String> rows) throws TrouNonTrouveException, JeuIncompletException {
+        List<Ball> balles = trouverBalles(rows);
+        List<Trou> trous = trouverHs(rows);
+        if (trous.size()!=balles.size()) throw new JeuIncompletException();
+        return null;
+    }
 }

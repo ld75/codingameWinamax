@@ -147,16 +147,7 @@ public class GolfTest {
         String str= "mlqkjsdf";
         Assertions.assertEquals("mlqkUsdf",mapAnalyzer.changeCharAt(str,4,"U"));
     }
-    @Test
-    public void troisDimensionsRempliesCibleEnBas() throws TrouNonTrouveException {
-        List<String> rows = new ArrayList<>(List.of("..1",
-                                    "H.."));
-        Ball balle = mapAnalyzer.trouverBalles(rows).get(0);
-        List<String> res = mapAnalyzer.getPath(balle, rows);
-        List<String> expect = List.of("..V",
-                                      ".<<");
-        Assertions.assertEquals(expect,res);
-    }
+
     @Test
     public void invalidPosition1_changeBallPosition_dontChangePosition(){
         List<String> rows = List.of("...",
@@ -258,14 +249,51 @@ public class GolfTest {
         Assertions.assertTrue(mapAnalyzer.isHTrouve(rows));
     }
     @Test
-    public void test2()
-    {
+    public void troisDimensionsRemplies() throws TrouNonTrouveException {
+        List<String> rows = new ArrayList<>(List.of("...H",
+                                                    "1..."));
+        Ball balle = mapAnalyzer.trouverBalles(rows).get(0);
+        List<String> res = mapAnalyzer.getPath(balle, rows);
+        List<String> expect = List.of(">>>.",
+                                    "^...");
+        Assertions.assertEquals(expect,res);
+    }
+    @Test
+    public void nombreTrouDifferentDeNombreBalles_preparerTerrain_erreur(){
+        List<String> rows = new ArrayList<>(List.of("3...H...3",
+                                                    "...."));
+        Assertions.assertThrows(JeuIncompletException.class,()->{mapAnalyzer.preparerJeuChoixballe(rows);});
+        List<String> rows2 = new ArrayList<>(List.of("3...H.1.3",
+                ".H.."));
+        Assertions.assertThrows(JeuIncompletException.class,()->{mapAnalyzer.preparerJeuChoixballe(rows2);});
+    }
+
+
+    @Test
+    public void plusieursBalles_avanceChacuneASonTour() throws TrouNonTrouveException {
+        List<String> rows = new ArrayList<>(List.of("...H..",
+                "1..."));
+        Ball balle = mapAnalyzer.trouverBalles(rows).get(0);
+        List<String> res = mapAnalyzer.getPath(balle, rows);
+        List<String> expect = List.of(">>>.",
+                "^...");
+    }
+    @Test
+    public void test2() throws TrouNonTrouveException {
         //taille: 3 3
         //ligne: 2.X
         //ligne: ..H
         //ligne: .H1
         //attendu: v..
-
+        List<String> rows = new ArrayList<>(List.of("2.X",
+                                                    "..H",
+                                                    ".H1"));
+        Ball balle = mapAnalyzer.trouverBalles(rows).get(0);
+        List<String> res = mapAnalyzer.getPath(balle, rows);
+        List<String> expect = List.of("V.X",
+                                      ">>.",
+                                      "..<");
+        Assertions.assertEquals(expect,res);
     }
     @Test
     public void test3()
