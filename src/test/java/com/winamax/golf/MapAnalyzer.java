@@ -55,7 +55,7 @@ public class MapAnalyzer {
     }
 
     private List<String> analyseRows(Ball balle, List<String> rows, Trou trou) throws TrouNonTrouveException {
-        findHorizontalAndVerticalDirection(balle, rows);
+        findHorizontalAndVerticalDirection(balle, rows,trou);
         return rows;
     }
 
@@ -63,10 +63,10 @@ public class MapAnalyzer {
         return direction.replace("H", ".");
     }
 
-    public void findHorizontalAndVerticalDirection(Ball balle, List<String> rows) throws TrouNonTrouveException {
+    public void findHorizontalAndVerticalDirection(Ball balle, List<String> rows, Trou trou) throws TrouNonTrouveException {
         String direction="";
-            if (rows.get(balle.y).indexOf("H")==-1) direction=returnDirectionOfOtherRowhavingH(balle.y,rows);
-            else if (rows.get(balle.y).indexOf("H") > balle.x) direction = ">";
+            if (balle.y!=trou.y) direction=returnDirectionOfOtherRowhavingH(balle.y,rows,trou.y);
+            else if (trou.x > balle.x) direction = ">";
             else direction = "<";
         rows.set(balle.y, changeCharAt( rows.get(balle.y),balle.x,direction));
 
@@ -101,20 +101,10 @@ public class MapAnalyzer {
         return direction.equals(">") && rows.get(0).length()-1 > balle.x;
     }
 
-    private String returnDirectionOfOtherRowhavingH(int rownum, List<String> rows) throws TrouNonTrouveException {
-        if (returnOtherRowhavingH(rownum,rows)>rownum) return "V";
+    private String returnDirectionOfOtherRowhavingH(int balleY, List<String> rows, Integer trouY){
+        if (trouY >balleY) return "V";
         else return "^";
     }
-
-    public int returnOtherRowhavingH(int rownum, List<String> rows) throws TrouNonTrouveException {
-        for (int rowidx=0; rowidx<rows.size(); rowidx++)
-        {
-            if (rowidx==rownum)continue;
-            if (rows.get(rowidx).contains("H")) return rowidx;
-        }
-        throw new TrouNonTrouveException();
-    }
-
     private int getWith(String dimensions) {
         return Integer.parseInt(dimensions.split(" ")[0]);
     }
@@ -168,6 +158,7 @@ public class MapAnalyzer {
     public List<String> jouerChaqueCouple(List<String> rows) throws TrouNonTrouveException, JeuIncompletException {
         CoupleBalleTrou couple = choisirCoupleBalleTrou(rows);
         List<String> res = getPath(couple.balle, rows, couple.trou);
+        System.out.println(res);
         if (isRestEncoreTrous(res)) jouerChaqueCouple(res);
         return res;
     }

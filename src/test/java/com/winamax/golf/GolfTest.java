@@ -15,7 +15,8 @@ public class GolfTest {
     public void findPathHorizontallyRight() throws TrouNonTrouveException {
         Ball whateverball = new Ball(1, 0, 0);
         List<String> rows = Arrays.asList("1H");
-        mapAnalyzer.findHorizontalAndVerticalDirection(whateverball, rows);
+        Trou trou= mapAnalyzer.trouveTrous(rows).get(0);
+        mapAnalyzer.findHorizontalAndVerticalDirection(whateverball, rows, trou);
         Assertions.assertEquals(">H",rows.get(0));
         Assertions.assertEquals(0,whateverball.score);
         Assertions.assertEquals(1,whateverball.x);
@@ -39,7 +40,8 @@ public class GolfTest {
     public void findPathHorizontallyAnyNumber() throws TrouNonTrouveException {
         Ball whateverball= new Ball(5,6,0);
         List<String> rows = Arrays.asList("H.....5");
-        mapAnalyzer.findHorizontalAndVerticalDirection(whateverball, rows);
+        Trou trou= mapAnalyzer.trouveTrous(rows).get(0);
+        mapAnalyzer.findHorizontalAndVerticalDirection(whateverball, rows, trou);
         Assertions.assertEquals("H.....<",rows.get(0));
         Assertions.assertEquals(4,whateverball.score);
         Assertions.assertEquals(5,whateverball.x);
@@ -50,14 +52,16 @@ public class GolfTest {
     public void deuxBallesSurUnPlan() throws TrouNonTrouveException {
         Ball balle= new Ball(0,0,0);
         List<String> rows = Arrays.asList("H..1..5");
-        mapAnalyzer.findHorizontalAndVerticalDirection(balle, rows);
+        Trou trou= mapAnalyzer.trouveTrous(rows).get(0);
+        mapAnalyzer.findHorizontalAndVerticalDirection(balle, rows, trou);
         Assertions.assertEquals("H..<..<",rows.get(0));
     }
     @Test
     public void findPathHorizontallyTooFar() throws TrouNonTrouveException {
         Ball balle=new Ball(3,6,0);
         List<String> rows = Arrays.asList("H.....3");
-        mapAnalyzer.findHorizontalAndVerticalDirection(balle, rows);
+        Trou trou= mapAnalyzer.trouveTrous(rows).get(0);
+        mapAnalyzer.findHorizontalAndVerticalDirection(balle, rows, trou);
         Assertions.assertEquals("H.....<",rows.get(0));
         Assertions.assertEquals(2,balle.score);
         Assertions.assertEquals(5,balle.x);
@@ -96,16 +100,6 @@ public class GolfTest {
         Assertions.assertEquals(expect,res);
     }
 
-    @Test
-    public void trouverHAbsentAilleursQueLaLigneActuelle()
-    {
-        Assertions.assertThrows(TrouNonTrouveException.class,()->{mapAnalyzer.returnOtherRowhavingH(0,Arrays.asList("mlHHHkjqsdf","mlqjsdf","lmqjsdf","lmjkqsdf"));});
-    }
-    @Test
-    public void trouverHAilleursQueLaLigneActuelle() throws TrouNonTrouveException {
-        int res = mapAnalyzer.returnOtherRowhavingH(0,Arrays.asList("mlHHHkjqsdf","mlqjsdf","lmqjsdf","HHHHHHH"));
-        Assertions.assertEquals(3,res);
-    }
     @Test
     public void deuxDimensionsRempliesCibleEnHaut() throws TrouNonTrouveException {
         List<String> rows = new ArrayList<>(List.of("H.",
@@ -319,8 +313,23 @@ public class GolfTest {
         Assertions.assertEquals(expect,res);
     }
     @Test
-    public void test3()
-    {
+    public void trouEtrangerEnChemin_jouer_eviterTrouEtranger() throws TrouNonTrouveException, JeuIncompletException {
+        List<String> rows = new ArrayList(List.of(
+                "...H.",
+                "...H.",
+                ".2..2",
+                "....."));
+        List<String> expect = List.of(
+                ".>>..",
+                ".^..<",
+                ".^..^",
+                ".....");
+        List<String> res = mapAnalyzer.jouerChaqueCouple( rows);
+        Assertions.assertEquals(expect,res);
+    }
+
+    @Test
+    public void test3() throws TrouNonTrouveException, JeuIncompletException {
         //taille: 5 5
         //ligne: 4..XX
         //ligne: .H.H.
@@ -328,6 +337,25 @@ public class GolfTest {
         //ligne: .2..2
         //ligne: .....
         //attendu: v....
+        List<String> rows = new ArrayList(List.of(
+                "4..XX",
+                ".H.H.",
+                "...H.",
+                ".2..2",
+                "....."));
+        List<String> expect = List.of(
+                ".>>VX",
+                ".....",
+                ".^..<",
+                ".^..^",
+                ".....");
+/*             [V..XX,
+                >>>..,
+                .^..<,
+                .^..^,
+                .....]*/
+        List<String> res = mapAnalyzer.jouerChaqueCouple( rows);
+        Assertions.assertEquals(expect,res);
     }
     @Test
     public void test4()
