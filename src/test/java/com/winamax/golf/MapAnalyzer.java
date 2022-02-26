@@ -7,17 +7,15 @@ import java.util.stream.IntStream;
 
 public class MapAnalyzer {
 
-    public List<String> getPath(Ball balle, List<String> rows) throws TrouNonTrouveException {
-        List<String> resultRows = analyseRows(balle, rows);
-        if (isHTrouve(resultRows)) return removeAllH(resultRows);
-        System.out.printf(resultRows.toString());
-        return getPath(balle,resultRows);
+    public List<String> getPath(Ball balle, List<String> rows, Trou trou) throws TrouNonTrouveException {
+        List<String> resultRows = analyseRows(balle, rows,trou);
+        if (isHTrouve(resultRows, trou)) return removeThisTrou(resultRows,trou);
+        return getPath(balle,resultRows, trou);
     }
 
-    public boolean isHTrouve(List<String> resultRows) throws TrouNonTrouveException {
-        Integer[] positionHXY = trouveHPosition(resultRows);
-        Integer y = positionHXY[1];
-        Integer x = positionHXY[0];
+    public boolean isHTrouve(List<String> resultRows, Trou trou) throws TrouNonTrouveException {
+        Integer y = trou.y;
+        Integer x = trou.x;
             if(identifie(resultRows,x+1,y)== '<'
                 || identifie(resultRows,x-1,y)== '>'
                 || identifie(resultRows,x,y-1)== 'V'
@@ -39,24 +37,29 @@ public class MapAnalyzer {
         return y < resultRows.size()-1  && x > 0  && resultRows.get(y+1).charAt(x + 1) == droite;
     }
 
-    public Integer[] trouveHPosition(List<String> resultRows) throws TrouNonTrouveException {
+    public List<Trou> trouveTrous(List<String> resultRows) throws TrouNonTrouveException {
+        List<Trou> trous = new ArrayList();
         for(int y=0; y<resultRows.size(); y++){
-            int x=resultRows.get(y).indexOf("H");
-            if (x!=-1) return new Integer[]{x,y};
+            for (int x=0; x<resultRows.get(y).length(); x++)
+            {
+                if (resultRows.get(y).charAt(x)=='H') trous.add(new Trou(new Integer[]{x,y}));
+            }
         }
-        throw new TrouNonTrouveException();
+        if (trous.size()==0) throw new TrouNonTrouveException();
+        return trous;
     }
 
-    private List<String> removeAllH(List<String> resultRows) {
-        return resultRows.stream().map(this::removeAllH).collect(Collectors.toList());
+    private List<String> removeThisTrou(List<String> resultRows, Trou trou) {
+        resultRows.set(trou.y,changeCharAt(resultRows.get(trou.y),trou.x,"."));
+        return resultRows;
     }
 
-    private List<String> analyseRows(Ball balle, List<String> rows) throws TrouNonTrouveException {
+    private List<String> analyseRows(Ball balle, List<String> rows, Trou trou) throws TrouNonTrouveException {
         findHorizontalAndVerticalDirection(balle, rows);
         return rows;
     }
 
-    private String removeAllH(String direction) {
+    private String removeThisTrou(String direction) {
         return direction.replace("H", ".");
     }
 
@@ -154,17 +157,27 @@ public class MapAnalyzer {
         return str.substring(0,at).concat(by).concat(str.substring(at+1));
     }
 
-    public List<Trou> trouverHs(List<String> rows) throws TrouNonTrouveException {
-        List<Trou> trous = new ArrayList<>();
-        Integer[] hPosition = trouveHPosition(rows);
-        trous.add(new Trou(hPosition));
-        return trous;
+
+    public CoupleBalleTrou choisirCoupleBalleTrou(List<String> rows) throws TrouNonTrouveException, JeuIncompletException {
+        List<Ball> balles = trouverBalles(rows);
+        List<Trou> trous = trouveTrous(rows);
+        if (trous.size()!=balles.size()) throw new JeuIncompletException();
+        return new CoupleBalleTrou(balles.get(0),trous.get(0));
     }
 
-    public Ball preparerJeuChoixballe(List<String> rows) throws TrouNonTrouveException, JeuIncompletException {
-        List<Ball> balles = trouverBalles(rows);
-        List<Trou> trous = trouverHs(rows);
-        if (trous.size()!=balles.size()) throw new JeuIncompletException();
-        return null;
+    public List<String> jouerChaqueCouple(List<String> rows) throws TrouNonTrouveException, JeuIncompletException {
+        CoupleBalleTrou couple = choisirCoupleBalleTrou(rows);
+        List<String> res = getPath(couple.balle, rows, couple.trou);
+        if (isRestEncoreTrous(res)) jouerChaqueCouple(res);
+        return res;
+    }
+
+    private boolean isRestEncoreTrous(List<String> res) {
+        boolean trouexist = false;
+        try {
+            return trouveTrous(res).size() > 0;
+        } catch (TrouNonTrouveException e) {
+            return false;
+        }
     }
 }
