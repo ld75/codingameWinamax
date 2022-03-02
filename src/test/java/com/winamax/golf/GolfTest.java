@@ -31,6 +31,7 @@ public class GolfTest {
         List<String> rows = new ArrayList<>(List.of("1H"));
         Ball balle = mapAnalyzer.trouverBalles(rows).get(0);
         Trou trou= mapAnalyzer.trouveTrous(rows).get(0);
+        mapAnalyzer.initialiserToutesLesStrategiesDeDeplacement();
         List<String> res = mapAnalyzer.getPath(balle, rows, trou);
         Assertions.assertEquals(">.",res.get(0));
     }
@@ -39,6 +40,7 @@ public class GolfTest {
         List<String> rows = new ArrayList<>(List.of("1H", ".."));
         Ball balle = mapAnalyzer.trouverBalles(rows).get(0);
         Trou trou= mapAnalyzer.trouveTrous(rows).get(0);
+        mapAnalyzer.initialiserToutesLesStrategiesDeDeplacement();
         List<String> res = mapAnalyzer.getPath(balle, rows, trou);
         List<String> expect = List.of(">.", "..");
         Assertions.assertEquals(expect,res);
@@ -49,6 +51,7 @@ public class GolfTest {
                                     "H."));
         Ball balle = mapAnalyzer.trouverBalles(rows).get(0);
         Trou trou= mapAnalyzer.trouveTrous(rows).get(0);
+        mapAnalyzer.initialiserToutesLesStrategiesDeDeplacement();
         List<String> res = mapAnalyzer.getPath(balle, rows, trou);
         List<String> expect = List.of("v.",
                                       "..");
@@ -61,6 +64,7 @@ public class GolfTest {
                                     "1."));
         Ball balle = mapAnalyzer.trouverBalles(rows).get(0);
         Trou trou= mapAnalyzer.trouveTrous(rows).get(0);
+        mapAnalyzer.initialiserToutesLesStrategiesDeDeplacement();
         List<String> res = mapAnalyzer.getPath(balle, rows, trou);
         List<String> expect = List.of("..",
                                       "^.");
@@ -210,6 +214,7 @@ public class GolfTest {
                                                     "4..."));
         Ball balle = mapAnalyzer.trouverBalles(rows).get(0);
         Trou trou= mapAnalyzer.trouveTrous(rows).get(0);
+        mapAnalyzer.initialiserToutesLesStrategiesDeDeplacement();
         List<String> res = mapAnalyzer.getPath(balle, rows, trou);
         List<String> expect = List.of("....",
                                     ">>>^");
@@ -265,35 +270,78 @@ public class GolfTest {
                 "5....."));
         Ball balle = mapAnalyzer.trouverBalles(rows).get(0);
         Trou trou= mapAnalyzer.trouveTrous(rows).get(0);
+        mapAnalyzer.initialiserToutesLesStrategiesDeDeplacement();
         List<String> res = mapAnalyzer.getPath(balle, rows, trou);
         List<String> expect = List.of(">>>.",
                 "^...");
     }
     @Test
-    public void combinaisonsDeStrategies2()
-    {
-        String test= "12";
-        List<String> combinaisons = mapAnalyzer.returnCombinasons(test);
-        System.out.println(combinaisons);
+    public void combinaisonsDeStrategies2(){
+        String test= "1,2";
+        CombinaisonBlock combinaison = new CombinaisonBlock("", new ArrayList(Arrays.asList(test.split(","))));
+        List<CombinaisonBlock> combinaisons = combinaison.combiner();
         Assertions.assertEquals(2,combinaisons.size());
-        Assertions.assertEquals("12",combinaisons.get(0));
-        Assertions.assertEquals("21",combinaisons.get(1));
+        assertions(combinaisons, "1", 0, Arrays.asList("2"));
+        assertions(combinaisons, "2", 1, Arrays.asList("1"));
     }
     @Test
-    @Disabled //TODO: produitcartesien toutes les combinaisons possibles à faire
-    public void combinaisonsDeStrategies3()
-    {
-        String test= "123";
-        List<String> combinaisons = mapAnalyzer.returnCombinasons(test);
-        System.out.println(combinaisons);
-        Assertions.assertEquals(6,combinaisons.size());
-        Assertions.assertEquals("123",combinaisons.get(0));
-        Assertions.assertEquals("21",combinaisons.get(1));
+    public void combinaisonsDeStrategies3(){
+        String test= "1,2,3";
+        CombinaisonBlock combinaison = new CombinaisonBlock("", new ArrayList(Arrays.asList(test.split(","))));
+        List<CombinaisonBlock> combinaisons = combinaison.combiner();
+        Assertions.assertEquals(3,combinaisons.size());
+        assertions(combinaisons, "1", 0, Arrays.asList(new String[]{"2","3"}));
+        assertions(combinaisons, "2", 1, Arrays.asList(new String[]{"1","3"}));
+        assertions(combinaisons, "3", 2, Arrays.asList(new String[]{"1","2"}));
+
     }
+    @Test
+    public void propagCombinasion(){
+        CombinaisonBlock block = new CombinaisonBlock("1", Arrays.asList(new String[]{"2"}));
+        List<CombinaisonBlock> res = block.combiner();
+        Assertions.assertEquals(1,res.size());
+        Assertions.assertEquals("1,2",res.get(0).prefix);
+        Assertions.assertEquals(0,res.get(0).reste.size());
+    }
+    @Test
+    public void cannotCombineAnymore()
+    {
+        CombinaisonBlock block = new CombinaisonBlock("1", new ArrayList<>());
+        Assertions.assertEquals(block,block.combiner().get(0));
+    }
+    @Test
+    public void demultiplieCombinaisons()
+    {
+        String test= "1,2,3";
+        CombinaisonBlock combinaison = new CombinaisonBlock("", new ArrayList(Arrays.asList(test.split(","))));
+        List<CombinaisonBlock> combinaisons = combinaison.getToutesCombinaisons();
+        Assertions.assertEquals(6,combinaisons.size());
+        combinaisons.stream().forEach(c-> System.out.println(c.toString()));
+    }
+    @Test
+    public void getTouteCombinaisonsDeDirectionsListString() {
+        String test = ">,^,<,v";
+        CombinaisonBlock combinaison = new CombinaisonBlock("", new ArrayList(Arrays.asList(test.split(","))));
+        List<String> combinaisons = combinaison.getToutesCombinaisonsString();
+        Assertions.assertEquals(24, combinaisons.size());
+        combinaisons.stream().forEach(c -> System.out.println(c));
+    }
+
+    private void assertions(List<CombinaisonBlock> combinaisons, String prefixe, int ligne, List<String> reste1) {
+        Assertions.assertEquals(prefixe, combinaisons.get(ligne).prefix);
+        String[] reste = convertirListeEnTableau(combinaisons.get(ligne).reste);
+        Assertions.assertArrayEquals(convertirListeEnTableau(reste1),reste);
+    }
+
+    private String[] convertirListeEnTableau(List<String> reste) {
+        return (String[]) reste.toArray(new String[reste.size()]);
+    }
+
     @Test
     public void allStrategiesPlayed_pickupNextStrategie_ThrowsToutRefaireException()  {
+        mapAnalyzer.initialiserToutesLesStrategiesDeDeplacement();
         Assertions.assertThrows(ToutRefaireAvecStrategieSuivanteException.class,()->
-        {for (int i=0; i<24; i++) mapAnalyzer.pickupNextStrategie();});
+        {for (int i=0; i<=24; i++) mapAnalyzer.pickupNextStrategie();});
     }
 
     @Test
@@ -302,8 +350,9 @@ public class GolfTest {
         Ball balle= new Ball();
         List<String> rows = new ArrayList();
         Trou trou=new Trou();
+        mapAnalyzerSpy.initialiserToutesLesStrategiesDeDeplacement();
         Assertions.assertThrows(ToutRefaireAvecStrategieSuivanteException.class,()->{mapAnalyzerSpy.analyseRows(balle, rows, trou);});
-        Assertions.assertEquals(8,mapAnalyzerSpy.strategiePlayed.size());
+        Assertions.assertEquals(24,mapAnalyzerSpy.strategiePlayed.size());
     }
     @Test
     public void faireJouerBallesPourUnTrouATourDeRole() throws TrouNonTrouveException, JeuIncompletException, NonResoluException {
@@ -389,6 +438,7 @@ public class GolfTest {
         mapAnalyzer.printChemin(rows, new Ball(), new Trou());
         Trou trou = mapAnalyzer.trouveTrous(rows).get(0);
         Ball balle = new Ball(4, 0, 0);
+        mapAnalyzer.initialiserToutesLesStrategiesDeDeplacement();
         List<String> res = mapAnalyzer.analyseRows(balle, rows, trou);
         System.out.println(res);
     }
@@ -421,14 +471,14 @@ public void flechesBellesEtTrousCroisees_jeu_eviterCroisementFlechesBallesEtTrou
     }
 
     @Test
-    public void rienNaFonctionne_changerCouplesEtRefaire() throws TrouNonTrouveException, NonResoluException, JeuIncompletException {
+    public void rienNaFonctionne_changerCouplesEtRefaire() {
         MapAnalyzerRechercheMemoriseeSpy mapAnalyzerSpy = new MapAnalyzerRechercheMemoriseeSpy();
         List<String> rows = new ArrayList(List.of(
                 "111",
                 "HHH"));
         Assertions.assertThrows(NonResoluException.class,()->{mapAnalyzerSpy.initialiserJeu(rows);});
         mapAnalyzerSpy.couples.forEach(c->System.out.println(c));
-        Assertions.assertEquals(8,mapAnalyzerSpy.couples.size());
+        Assertions.assertEquals(9,mapAnalyzerSpy.couples.size());
     }
     @Test
     public void test3() throws TrouNonTrouveException, JeuIncompletException, NonResoluException {

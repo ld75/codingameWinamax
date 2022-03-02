@@ -8,4 +8,12 @@ public class CoupleBalleTrou {
         this.balle = ball;
         this.trou=trou;
     }
+
+    @Override
+    public String toString() {
+        return "CoupleBalleTrou{" +
+                "balle=" + balle.x +
+                ",trou=" + trou.x +
+                '}';
+    }
 }

@@ -11,15 +11,7 @@ public class MapAnalyzer {
     int ballenbr = 0;  int trounbr=0; int combinaisoncouple=0;
     int strategieNumber=0;
     private int forAllStrategieNumber=0;
-    List<String> strategies = Arrays.asList(
-            ">,^,<,v",
-            "^,>,v,<",
-            ">,v,<,^",
-            "v,<,^,>",
-            "<,^,>,v",
-            "v,>,^,<",
-            "^,<,v,>",
-            "<,v,>,^");
+    List<String> strategies;
 
     private List<Trou> resolvedTrous= new ArrayList();
     private ArrayList initialMap;
@@ -70,7 +62,7 @@ public class MapAnalyzer {
     }
 
     List<String> analyseRows(Ball balle, List<String> rows, Trou trou) throws ToutRefaireAvecStrategieSuivanteException {
-        String chemin = null;
+        String chemin ="";
             chemin = rechercheParStrategies(balle, rows, trou, chemin);
         ecrireAuPropreLeChemin(balle, rows, chemin);
         return rows;
@@ -86,13 +78,14 @@ public class MapAnalyzer {
             } catch (StrategiePerdante e) {
                 strategieDirection =pickupNextStrategie();
                 balle.setInvalidPaths(e.getInvalidPaths());
-                System.out.println("NOUVELLE STRATEGIE POUR CETTE BALLE "+strategieNumber);
+                System.out.println("NOUVELLE STRATEGIE NUMERO "+strategieNumber+" POUR CETTE BALLE ");
             }
         }
         return chemin;
     }
 
     public List<String> pickupNextStrategie() throws ToutRefaireAvecStrategieSuivanteException {
+        System.out.println(strategieNumber+" " +strategies.size());
         if (strategieNumber>= strategies.size()) throw new ToutRefaireAvecStrategieSuivanteException();
         List<String> ret = Arrays.asList(strategies.get(strategieNumber).split(","));
         strategieNumber++;
@@ -294,6 +287,7 @@ public class MapAnalyzer {
         List<Trou> trous = trouveTrous(initialMap);
         if (trous.size()!=balles.size()) throw new JeuIncompletException();
         CoupleBalleTrou coupleSuivant = new CoupleBalleTrou(balles.get(ballenbr), trous.get(trounbr));
+        System.out.println(coupleSuivant);
         incrementeCompteursCouples(balles.size());
         return coupleSuivant;
     }
@@ -308,9 +302,16 @@ public class MapAnalyzer {
     public List<String> initialiserJeu(List<String> rows) throws TrouNonTrouveException, JeuIncompletException, NonResoluException {
         strategieNumber=0;
         forAllStrategieNumber=0;
+        initialiserToutesLesStrategiesDeDeplacement();
         if (initialMap==null) initialMap= new ArrayList(Arrays.asList(rows.toArray()));
         return jouerChaqueCouple(rows);
     }
+
+    public void initialiserToutesLesStrategiesDeDeplacement() {
+        CombinaisonBlock combinaison = new CombinaisonBlock("", new ArrayList(Arrays.asList(">,^,<,v".split(","))));
+        strategies= combinaison.getToutesCombinaisonsString();
+    }
+
     private List toutRecommencerAvecNouvelleStrategie() throws TrouNonTrouveException, NonResoluException, JeuIncompletException {
         return jouerChaqueCouple(new ArrayList(Arrays.asList(initialMap.toArray())));
     }
@@ -355,23 +356,5 @@ public class MapAnalyzer {
         System.out.println("-----");
     }
 
-    public List<String> returnCombinasons(String directions) {
-        List<Character> chars =directions.chars().mapToObj(c -> (char) c).collect(Collectors.toList());
-        List<String> combinaisons = new ArrayList<>();
-        for (int startpos = 0; startpos<directions.length(); startpos++) {
-            int lastpos = 0;
-            combinaisons.addAll(combiner(chars, startpos, lastpos));
-        }
-        return combinaisons;
-    }
 
-    private List<String> combiner(List<Character> chars, int startpos, int lastpos) {
-        ArrayList clone = new ArrayList(Arrays.asList(chars.toArray()));
-        List<String> combinaisons= new ArrayList<>();
-        StringBuffer ligne1 = new StringBuffer();
-        ligne1.append(clone.remove(startpos));
-        ligne1.append(clone.remove(lastpos));
-        combinaisons.add(ligne1.toString());
-        return combinaisons;
-    }
 }
