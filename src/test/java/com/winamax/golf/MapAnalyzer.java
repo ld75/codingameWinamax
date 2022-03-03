@@ -282,26 +282,20 @@ public class MapAnalyzer {
     }
 
 
-    public CouplesBalleTrou choisirProchainCouplesBalleTrou(List<String> initialMap) throws TrouNonTrouveException, JeuIncompletException {
-        CouplesBalleTrou couplesBalleTrou = new CouplesBalleTrou();
+    public CouplesBalleTrouCombines definirTousLesCouplesBalleTrou(List<String> initialMap) throws TrouNonTrouveException, JeuIncompletException {
+        CouplesBalleTrouCombines couplesBalleTrou = new CouplesBalleTrouCombines();
         List<Ball> balles = trouverBalles(initialMap);
         List<Trou> trous = trouveTrous(initialMap);
         if (trous.size()!=balles.size()) throw new JeuIncompletException();
-        couplesBalleTrou.addCouple(balles.get(ballenbr), trous.get(trounbr));
-        incrementeCompteursCouples(balles.size());
+        couplesBalleTrou.combiner(balles, trous);
         return couplesBalleTrou;
     }
 
-    private void incrementeCompteursCouples(int nbrTotalCouples) {
-        ballenbr++;
-        trounbr++;
-        if (ballenbr>=nbrTotalCouples) {ballenbr=0;combinaisoncouple++; trounbr=combinaisoncouple;}
-        if (trounbr>=nbrTotalCouples) trounbr=0;
-    }
 
     public List<String> initialiserJeu(List<String> rows) throws TrouNonTrouveException, JeuIncompletException, NonResoluException {
         reinitialiserStrategies();
         initialiserToutesLesStrategiesDeDeplacement();
+        definirTousLesCouplesBalleTrou(rows);
         if (initialMap==null) initialMap= new ArrayList(Arrays.asList(rows.toArray()));
         return jouerChaqueCouple(rows);
     }
@@ -311,21 +305,22 @@ public class MapAnalyzer {
         strategies= combinaison.getToutesCombinaisonsString();
     }
 
-    private List toutRecommencerAvecNouvelleStrategie() throws TrouNonTrouveException, NonResoluException, JeuIncompletException {
+    private List toutRecommencerAvecDifferentsCouples() throws TrouNonTrouveException, NonResoluException, JeuIncompletException {
         return jouerChaqueCouple(new ArrayList(Arrays.asList(initialMap.toArray())));
     }
     private List<String> jouerChaqueCouple(List<String> rows) throws TrouNonTrouveException, JeuIncompletException, NonResoluException {
-        CouplesBalleTrou couples = choisirProchainCouplesBalleTrou(initialMap);
+        CouplesBalleTrouCombines couples = definirTousLesCouplesBalleTrou(initialMap);
         System.out.println("couples en jeu: " + couples.toString());
         List<String> nouveauPlan = null;
         try {
-            nouveauPlan = getPath(couples.balle, rows, couples.trou);
+            CouplesBalleTrouCombines.CoupleBalleTrou couple = couples.getProchainCoupleDeCeJeu();
+            nouveauPlan = getPath(couple.balle, rows, couple.trou);
         } catch (ToutRefaireAvecNouveauxCouples e) {
             reinitialiserStrategies();
-            System.out.println("NOUVELLE STRATEGIE POUR TOUS "+strategieNumber);
+            System.out.println("CHANGER COUPLES");
             if (strategieNumber== strategies.size()-1) throw new NonResoluException();
             printChemin(initialMap,new Ball(),new Trou());
-            return toutRecommencerAvecNouvelleStrategie();
+            return toutRecommencerAvecDifferentsCouples();
         }
         if (isRestEncoreTrous(nouveauPlan)) initialiserJeu(nouveauPlan);
         return nouveauPlan;

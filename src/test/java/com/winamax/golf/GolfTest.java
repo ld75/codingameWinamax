@@ -223,46 +223,22 @@ public class GolfTest {
     public void nombreTrouDifferentDeNombreBalles_choisirCoupleBalleTrou_erreur(){
         List<String> rows = new ArrayList<>(List.of("3...H...3",
                                                     "...."));
-        Assertions.assertThrows(JeuIncompletException.class,()->{mapAnalyzer.choisirProchainCouplesBalleTrou(rows);});
+        Assertions.assertThrows(JeuIncompletException.class,()->{mapAnalyzer.definirTousLesCouplesBalleTrou(rows);});
         List<String> rows2 = new ArrayList<>(List.of("3...H.1.3",
                 ".H.."));
-        Assertions.assertThrows(JeuIncompletException.class,()->{mapAnalyzer.choisirProchainCouplesBalleTrou(rows2);});
+        Assertions.assertThrows(JeuIncompletException.class,()->{mapAnalyzer.definirTousLesCouplesBalleTrou(rows2);});
     }
     @Test
     public void plusieursBallesPlusieursTrous_choisirCoupleBalleTrou_choisirCoupleBalleTrou() throws TrouNonTrouveException, JeuIncompletException {
         List<String> rows = new ArrayList<>(List.of("123......",
                                                     "HHH......"));
-        CouplesBalleTrou coupleBalleTrou = mapAnalyzer.choisirProchainCouplesBalleTrou(rows);
+        CouplesBalleTrouCombines coupleBalleTrouToutJeux = mapAnalyzer.definirTousLesCouplesBalleTrou(rows);
 
-        Assertions.assertEquals(0,coupleBalleTrou.couples.size());
-        /*Assertions.assertEquals(1,coupleBalleTrou.trou.x);
-        coupleBalleTrou = mapAnalyzer.choisirProchainCouplesBalleTrou(rows);
-        Assertions.assertEquals(2,coupleBalleTrou.balle.x);
-        Assertions.assertEquals(3,coupleBalleTrou.trou.x);
-        coupleBalleTrou = mapAnalyzer.choisirProchainCouplesBalleTrou(rows);
-        Assertions.assertEquals(4,coupleBalleTrou.balle.x);
-        Assertions.assertEquals(5,coupleBalleTrou.trou.x);
-        coupleBalleTrou = mapAnalyzer.choisirProchainCouplesBalleTrou(rows);
-        Assertions.assertEquals(0,coupleBalleTrou.balle.x);
-        Assertions.assertEquals(3,coupleBalleTrou.trou.x);
-        coupleBalleTrou = mapAnalyzer.choisirProchainCouplesBalleTrou(rows);
-        Assertions.assertEquals(2,coupleBalleTrou.balle.x);
-        Assertions.assertEquals(5,coupleBalleTrou.trou.x);
-        coupleBalleTrou = mapAnalyzer.choisirProchainCouplesBalleTrou(rows);
-        Assertions.assertEquals(4,coupleBalleTrou.balle.x);
-        Assertions.assertEquals(1,coupleBalleTrou.trou.x);
-        coupleBalleTrou = mapAnalyzer.choisirProchainCouplesBalleTrou(rows);
-        Assertions.assertEquals(0,coupleBalleTrou.balle.x);
-        Assertions.assertEquals(5,coupleBalleTrou.trou.x);
-        coupleBalleTrou = mapAnalyzer.choisirProchainCouplesBalleTrou(rows);
-        Assertions.assertEquals(2,coupleBalleTrou.balle.x);
-        Assertions.assertEquals(1,coupleBalleTrou.trou.x);
-        coupleBalleTrou = mapAnalyzer.choisirProchainCouplesBalleTrou(rows);
-        Assertions.assertEquals(4,coupleBalleTrou.balle.x);
-        Assertions.assertEquals(3,coupleBalleTrou.trou.x);
-        coupleBalleTrou = mapAnalyzer.choisirProchainCouplesBalleTrou(rows);
-        Assertions.assertEquals(0,coupleBalleTrou.balle.x);
-        Assertions.assertEquals(1,coupleBalleTrou.trou.x);*/
+        Assertions.assertEquals(3,coupleBalleTrouToutJeux.toutJeuxCouples.size());
+        Assertions.assertEquals(3,coupleBalleTrouToutJeux.toutJeuxCouples.get(0).size());
+        System.out.println(coupleBalleTrouToutJeux);
+        Assertions.assertTrue(coupleBalleTrouToutJeux.toutJeuxCouples.get(0).get(0).trou.x!=coupleBalleTrouToutJeux.toutJeuxCouples.get(1).get(0).trou.x);
+
     }
     @Test
     public void plusieursBalles_avanceChacuneASonTour() throws TrouNonTrouveException, ToutRefaireAvecNouveauxCouples {
