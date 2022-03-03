@@ -10,13 +10,13 @@ import java.util.stream.IntStream;
 public class MapAnalyzer {
     int ballenbr = 0;  int trounbr=0; int combinaisoncouple=0;
     int strategieNumber=0;
-    private int forAllStrategieNumber=0;
     List<String> strategies;
 
     private List<Trou> resolvedTrous= new ArrayList();
     private ArrayList initialMap;
+    private int compteur=0;
 
-    public List<String> getPath(Ball balle, List<String> rows, Trou trou) throws ToutRefaireAvecStrategieSuivanteException {
+    public List<String> getPath(Ball balle, List<String> rows, Trou trou) throws ToutRefaireAvecNouveauxCouples {
         List<String> resultRows = new ArrayList<>();
             resultRows = analyseRows(balle, rows,trou);
         if (isHTrouve(resultRows, trou)) return MarkTheTrouHasResolved(trou, resultRows);
@@ -61,32 +61,31 @@ public class MapAnalyzer {
         return resultRows;
     }
 
-    List<String> analyseRows(Ball balle, List<String> rows, Trou trou) throws ToutRefaireAvecStrategieSuivanteException {
+    List<String> analyseRows(Ball balle, List<String> rows, Trou trou) throws ToutRefaireAvecNouveauxCouples {
         String chemin ="";
             chemin = rechercheParStrategies(balle, rows, trou, chemin);
         ecrireAuPropreLeChemin(balle, rows, chemin);
         return rows;
     }
 
-    private String rechercheParStrategies(Ball balle, List<String> rows, Trou trou, String chemin) throws ToutRefaireAvecStrategieSuivanteException {
+    private String rechercheParStrategies(Ball balleOriginal, List<String> rows, Trou trou, String chemin) throws ToutRefaireAvecNouveauxCouples {
         boolean isStrategieSuccess=false;
         List<String> strategieDirection =pickupNextStrategie();
         while(isStrategieSuccess==false) {
             try {
-                chemin = rechercheMemorisee(balle, rows, trou, strategieDirection);
+                chemin = rechercheMemorisee(balleOriginal, rows, trou, strategieDirection);
                 isStrategieSuccess = true;
             } catch (StrategiePerdante e) {
                 strategieDirection =pickupNextStrategie();
-                balle.setInvalidPaths(e.getInvalidPaths());
+                balleOriginal = Ball.copieExperience(e.getBallWithInvalidPaths(),balleOriginal);
                 System.out.println("NOUVELLE STRATEGIE NUMERO "+strategieNumber+" POUR CETTE BALLE ");
             }
         }
         return chemin;
     }
 
-    public List<String> pickupNextStrategie() throws ToutRefaireAvecStrategieSuivanteException {
-        System.out.println(strategieNumber+" " +strategies.size());
-        if (strategieNumber>= strategies.size()) throw new ToutRefaireAvecStrategieSuivanteException();
+    public List<String> pickupNextStrategie() throws ToutRefaireAvecNouveauxCouples {
+        if (strategieNumber>= strategies.size()) throw new ToutRefaireAvecNouveauxCouples();
         List<String> ret = Arrays.asList(strategies.get(strategieNumber).split(","));
         strategieNumber++;
         return ret;
@@ -105,14 +104,14 @@ public class MapAnalyzer {
     }
 
     public String rechercheMemorisee(Ball balleOriginale, List<String> rowsOriginal, Trou trou, List<String> strategieDirections) throws StrategiePerdante {
-        System.out.println("NOUVELLE RECHERCHE ");
-        Ball balle=balleOriginale.createNewInstance();
+        System.out.println("NOUVELLE RECHERCHE MEMORISEE ");
+        Ball balle=Ball.createNewInstance(balleOriginale);
         ArrayList<String> rowsCopie = new ArrayList(rowsOriginal);
         int iddirections=0;
         while (!isHTrouve(rowsCopie,trou)) {
             if (balle.isTourneEnRond()){
                 if (balle.isATrouveChemin()) return balle.getCheminParcouruLePlusCourt();
-                throw new StrategiePerdante(balle.getInvalidPaths());
+                throw new StrategiePerdante(balle);
             }
             String direction =strategieDirections.get(iddirections);
             while (isBallCanMoove(balle, direction, rowsCopie,trou)) {
@@ -142,9 +141,10 @@ public class MapAnalyzer {
     }
 
     private String reesayeAvecPlusPetitScore(Ball balleOriginale, List<String> rowsOriginal, Trou trou, List<String> strategieDirections, Ball balle) throws StrategiePerdante {
+        System.out.println("NOUVELLE RECHERCHE MEMORISEE PLUS COURTE");
         balle.decrementeScoreDessai();
-        balleOriginale.copieExperience(balle);
-        return rechercheMemorisee(balleOriginale, rowsOriginal, trou, strategieDirections);
+        Ball copieOriginaleEtExperience = Ball.copieExperience(balle,balleOriginale);
+        return rechercheMemorisee(copieOriginaleEtExperience, rowsOriginal, trou, strategieDirections);
     }
 
     private void avanceBalleDansDirection(Ball balle, ArrayList<String> rowsCopie, String direction) {
@@ -166,7 +166,7 @@ public class MapAnalyzer {
     private boolean isNaPasEchoue(Ball balle, String lastDirection) throws StrategiePerdante {
         if (lastDirection.equals("0")) {
             if (balle.isATrouveChemin()) return true;
-            throw new StrategiePerdante(balle.getInvalidPaths());
+            throw new StrategiePerdante(balle);
         }
         return false;
     }
@@ -282,14 +282,14 @@ public class MapAnalyzer {
     }
 
 
-    public CoupleBalleTrou choisirProchinCoupleBalleTrou(List<String> initialMap) throws TrouNonTrouveException, JeuIncompletException {
+    public CouplesBalleTrou choisirProchainCouplesBalleTrou(List<String> initialMap) throws TrouNonTrouveException, JeuIncompletException {
+        CouplesBalleTrou couplesBalleTrou = new CouplesBalleTrou();
         List<Ball> balles = trouverBalles(initialMap);
         List<Trou> trous = trouveTrous(initialMap);
         if (trous.size()!=balles.size()) throw new JeuIncompletException();
-        CoupleBalleTrou coupleSuivant = new CoupleBalleTrou(balles.get(ballenbr), trous.get(trounbr));
-        System.out.println(coupleSuivant);
+        couplesBalleTrou.addCouple(balles.get(ballenbr), trous.get(trounbr));
         incrementeCompteursCouples(balles.size());
-        return coupleSuivant;
+        return couplesBalleTrou;
     }
 
     private void incrementeCompteursCouples(int nbrTotalCouples) {
@@ -300,8 +300,7 @@ public class MapAnalyzer {
     }
 
     public List<String> initialiserJeu(List<String> rows) throws TrouNonTrouveException, JeuIncompletException, NonResoluException {
-        strategieNumber=0;
-        forAllStrategieNumber=0;
+        reinitialiserStrategies();
         initialiserToutesLesStrategiesDeDeplacement();
         if (initialMap==null) initialMap= new ArrayList(Arrays.asList(rows.toArray()));
         return jouerChaqueCouple(rows);
@@ -316,26 +315,26 @@ public class MapAnalyzer {
         return jouerChaqueCouple(new ArrayList(Arrays.asList(initialMap.toArray())));
     }
     private List<String> jouerChaqueCouple(List<String> rows) throws TrouNonTrouveException, JeuIncompletException, NonResoluException {
-        CoupleBalleTrou couple = choisirProchinCoupleBalleTrou(initialMap);
-        List<String> res = null;
+        CouplesBalleTrou couples = choisirProchainCouplesBalleTrou(initialMap);
+        System.out.println("couples en jeu: " + couples.toString());
+        List<String> nouveauPlan = null;
         try {
-            res = getPath(couple.balle, rows, couple.trou);
-        } catch (ToutRefaireAvecStrategieSuivanteException e) {
-            changerStrategie();
-            System.out.println("NOUVELLE STRATEGIE POUR TOUS "+strategieNumber+" " +forAllStrategieNumber);
+            nouveauPlan = getPath(couples.balle, rows, couples.trou);
+        } catch (ToutRefaireAvecNouveauxCouples e) {
+            reinitialiserStrategies();
+            System.out.println("NOUVELLE STRATEGIE POUR TOUS "+strategieNumber);
             if (strategieNumber== strategies.size()-1) throw new NonResoluException();
             printChemin(initialMap,new Ball(),new Trou());
             return toutRecommencerAvecNouvelleStrategie();
         }
-        if (isRestEncoreTrous(res)) initialiserJeu(res);
-        return res;
+        if (isRestEncoreTrous(nouveauPlan)) initialiserJeu(nouveauPlan);
+        return nouveauPlan;
     }
 
 
 
-    private void changerStrategie() {
-        forAllStrategieNumber++;
-        strategieNumber= forAllStrategieNumber;
+    private void reinitialiserStrategies() {
+        strategieNumber=0;
     }
 
     private boolean isRestEncoreTrous(List<String> res) {
@@ -349,6 +348,8 @@ public class MapAnalyzer {
 
     public void printChemin(List<String> rows, Ball balle, Trou trou) {
         ArrayList rowsToPrint = new ArrayList(Arrays.asList(rows.toArray()));
+        compteur++;
+        System.out.println(compteur+ " "+ balle.imprimeStak());
         changeCharAt(rowsToPrint,balle.x,balle.y,"B");
         changeCharAt(rowsToPrint,trou.x,trou.y,"T");
         System.out.println("-----");

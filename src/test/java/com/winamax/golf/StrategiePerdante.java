@@ -3,13 +3,13 @@ package com.winamax.golf;
 import java.util.List;
 
 public class StrategiePerdante extends Throwable {
-    private List<String> invalidPaths;
+    private Ball ballWithInvalidPaths;
 
-    public List<String> getInvalidPaths() {
-        return this.invalidPaths;
+    public Ball getBallWithInvalidPaths() {
+        return this.ballWithInvalidPaths;
     }
-    StrategiePerdante(List<String> invalidPaths)
+    StrategiePerdante(Ball balle)
     {
-        this.invalidPaths=invalidPaths;
+        this.ballWithInvalidPaths=balle;
     }
 }

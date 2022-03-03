@@ -2,8 +2,6 @@ package com.winamax.golf;
 
 import java.util.*;
 
-import static java.util.stream.Collectors.toSet;
-
 public class Ball {
     public int scoreDecrementalDessai;
     public int score;
@@ -98,24 +96,28 @@ public class Ball {
         MapAnalyzer.changeCharAt(rowsCopie, oldBlocage[0], oldBlocage[1], ".");
     }
 
-    public Ball createNewInstance() {
+    public static Ball createNewInstance(Ball ball) {
         Ball ret = new Ball();
-        ret.x=this.x;
-        ret.y=this.y;
-        ret.score=this.score;
-        ret.scoreDecrementalDessai=this.scoreDecrementalDessai;
-        ret.stackDirection=this.stackDirection;
-        ret.stackDirectionsFound=this.stackDirectionsFound;
-        ret.invalidPaths=this.invalidPaths;
+        ret.x=ball.x;
+        ret.y=ball.y;
+        ret.score=ball.score;
+        ret.scoreDecrementalDessai=ball.scoreDecrementalDessai;
+        ret.stackDirection=ball.stackDirection;
+        ret.stackDirectionsFound=ball.stackDirectionsFound;
+        ret.invalidPaths=ball.invalidPaths;
         return ret;
     }
 
-    public void copieExperience(Ball balle) {
-        this.stackDirectionsFound=balle.stackDirectionsFound;
-        this.scoreDecrementalDessai=balle.scoreDecrementalDessai;
-        this.score=scoreDecrementalDessai;
-        this.stackDirection=new Stack<>();
-        this.invalidPaths=balle.invalidPaths;
+    public static Ball copieExperience(Ball Actualballe, Ball originalBalle) {
+        Ball copieOriginale = createNewInstance(originalBalle);
+        List<String> stackDirectionLePlusCourt = new ArrayList<>();
+        stackDirectionLePlusCourt.add(Actualballe.getCheminParcouruLePlusCourt());
+        copieOriginale.stackDirectionsFound=stackDirectionLePlusCourt;
+        copieOriginale.scoreDecrementalDessai=Actualballe.scoreDecrementalDessai;
+        copieOriginale.score=Actualballe.scoreDecrementalDessai;
+        copieOriginale.stackDirection=new Stack<>();
+        copieOriginale.invalidPaths=Actualballe.invalidPaths;
+        return copieOriginale;
     }
 
     public boolean isATrouveChemin() {
@@ -149,5 +151,13 @@ public class Ball {
     {
         if(this.x==((Ball)o).x && this.y==((Ball)o).y)  return true;
         return false;
+    }
+
+    public void resetInvalidPaths() {
+        this.invalidPaths=new ArrayList<>();
+    }
+
+    public String imprimeStak() {
+        return stackDirection.toString();
     }
 }
