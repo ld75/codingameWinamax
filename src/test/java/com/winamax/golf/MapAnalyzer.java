@@ -8,19 +8,19 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class MapAnalyzer {
-    int ballenbr = 0;  int trounbr=0; int combinaisoncouple=0;
+    int ballenbr = 0;  int trounbr=0; int combinaisoncoupleNbr =0;
     int strategieNumber=0;
     List<String> strategies;
 
     private List<Trou> resolvedTrous= new ArrayList();
     private ArrayList initialMap;
-    private int compteur=0;
+    private List<List<CouplesBalleTrouCombines.CoupleBalleTrou>> combinaisoncouples;
 
     public List<String> getPath(Ball balle, List<String> rows, Trou trou) throws ToutRefaireAvecNouveauxCouples {
         List<String> resultRows = new ArrayList<>();
             resultRows = analyseRows(balle, rows,trou);
         if (isHTrouve(resultRows, trou)) return MarkTheTrouHasResolved(trou, resultRows);
-        return getPath(balle,resultRows, trou);
+        throw new ToutRefaireAvecNouveauxCouples();
     }
 
     private List<String> MarkTheTrouHasResolved(Trou trou, List<String> resultRows) {
@@ -63,14 +63,14 @@ public class MapAnalyzer {
 
     List<String> analyseRows(Ball balle, List<String> rows, Trou trou) throws ToutRefaireAvecNouveauxCouples {
         String chemin ="";
-            chemin = rechercheParStrategies(balle, rows, trou, chemin);
+        chemin = rechercheParStrategies(balle, rows, trou, chemin);
         ecrireAuPropreLeChemin(balle, rows, chemin);
         return rows;
     }
 
     private String rechercheParStrategies(Ball balleOriginal, List<String> rows, Trou trou, String chemin) throws ToutRefaireAvecNouveauxCouples {
         boolean isStrategieSuccess=false;
-        List<String> strategieDirection =pickupNextStrategie();
+        List<String> strategieDirection =pickupFirstStrategie();
         while(isStrategieSuccess==false) {
             try {
                 chemin = rechercheMemorisee(balleOriginal, rows, trou, strategieDirection);
@@ -78,16 +78,24 @@ public class MapAnalyzer {
             } catch (StrategiePerdante e) {
                 strategieDirection =pickupNextStrategie();
                 balleOriginal = Ball.copieExperience(e.getBallWithInvalidPaths(),balleOriginal);
-                System.out.println("NOUVELLE STRATEGIE NUMERO "+strategieNumber+" POUR CETTE BALLE ");
+                System.out.println("NOUVELLE STRATEGIE NUMERO "+strategieNumber+" POUR CETTE BALLE :"+ strategieDirection);
             }
         }
         return chemin;
     }
 
+    private List<String> pickupFirstStrategie() {
+        reinitialiserStrategies();
+        List<String> ret = Arrays.asList(strategies.get(strategieNumber).split(","));
+        System.out.println("STRATEGIE: "+ret);
+        return ret;
+    }
+
     public List<String> pickupNextStrategie() throws ToutRefaireAvecNouveauxCouples {
+        strategieNumber++;
         if (strategieNumber>= strategies.size()) throw new ToutRefaireAvecNouveauxCouples();
         List<String> ret = Arrays.asList(strategies.get(strategieNumber).split(","));
-        strategieNumber++;
+        System.out.println("STRATEGIE: "+ret);
         return ret;
     }
 
@@ -104,7 +112,7 @@ public class MapAnalyzer {
     }
 
     public String rechercheMemorisee(Ball balleOriginale, List<String> rowsOriginal, Trou trou, List<String> strategieDirections) throws StrategiePerdante {
-        System.out.println("NOUVELLE RECHERCHE MEMORISEE ");
+        System.out.println("NOUVELLE RECHERCHE MEMORISEE "+balleOriginale + " Trou: "+trou);
         Ball balle=Ball.createNewInstance(balleOriginale);
         ArrayList<String> rowsCopie = new ArrayList(rowsOriginal);
         int iddirections=0;
@@ -120,7 +128,10 @@ public class MapAnalyzer {
                 printChemin(rowsCopie, balle, trou);
                 if (isHTrouve(rowsCopie,trou)) {
                     balle.sauveParcourtEtReinitStack();
-                    if (balle.isAEssayeChaqueScore()) return balle.getCheminParcouruLePlusCourt();
+                    if (balle.isAEssayeChaqueScore()) {
+                        System.out.println("TROUVE!");
+                        return balle.getCheminParcouruLePlusCourt();
+                    }
                     else return reesayeAvecPlusPetitScore(balleOriginale, rowsOriginal, trou, strategieDirections, balle);
                 }
                 iddirections = 0;
@@ -282,20 +293,20 @@ public class MapAnalyzer {
     }
 
 
-    public CouplesBalleTrouCombines definirTousLesCouplesBalleTrou(List<String> initialMap) throws TrouNonTrouveException, JeuIncompletException {
+    public List<List<CouplesBalleTrouCombines.CoupleBalleTrou>> definirTousLesCouplesBalleTrou(List<String> initialMap) throws TrouNonTrouveException, JeuIncompletException {
         CouplesBalleTrouCombines couplesBalleTrou = new CouplesBalleTrouCombines();
         List<Ball> balles = trouverBalles(initialMap);
         List<Trou> trous = trouveTrous(initialMap);
         if (trous.size()!=balles.size()) throw new JeuIncompletException();
-        couplesBalleTrou.combiner(balles, trous);
-        return couplesBalleTrou;
+        couplesBalleTrou.combinerDeuxsens(balles, trous);
+        return couplesBalleTrou.toutJeuxCouples;
     }
 
 
     public List<String> initialiserJeu(List<String> rows) throws TrouNonTrouveException, JeuIncompletException, NonResoluException {
         reinitialiserStrategies();
         initialiserToutesLesStrategiesDeDeplacement();
-        definirTousLesCouplesBalleTrou(rows);
+        combinaisoncouples = definirTousLesCouplesBalleTrou(rows);
         if (initialMap==null) initialMap= new ArrayList(Arrays.asList(rows.toArray()));
         return jouerChaqueCouple(rows);
     }
@@ -305,25 +316,28 @@ public class MapAnalyzer {
         strategies= combinaison.getToutesCombinaisonsString();
     }
 
-    private List toutRecommencerAvecDifferentsCouples() throws TrouNonTrouveException, NonResoluException, JeuIncompletException {
-        return jouerChaqueCouple(new ArrayList(Arrays.asList(initialMap.toArray())));
+    private void toutRecommencerAvecDifferentsCouples() throws NonResoluException {
+        combinaisoncoupleNbr++;
+        if (combinaisoncoupleNbr>combinaisoncouples.size()-1) throw new NonResoluException();
+        System.out.println("CHANGER COUPLES "+combinaisoncouples.get(combinaisoncoupleNbr));
     }
     private List<String> jouerChaqueCouple(List<String> rows) throws TrouNonTrouveException, JeuIncompletException, NonResoluException {
-        CouplesBalleTrouCombines couples = definirTousLesCouplesBalleTrou(initialMap);
-        System.out.println("couples en jeu: " + couples.toString());
-        List<String> nouveauPlan = null;
+        List<String> nouveauPlanResolu = null;
+        ArrayList<String> copieOriginal = new ArrayList(rows);
         try {
-            CouplesBalleTrouCombines.CoupleBalleTrou couple = couples.getProchainCoupleDeCeJeu();
-            nouveauPlan = getPath(couple.balle, rows, couple.trou);
+            List<CouplesBalleTrouCombines.CoupleBalleTrou> couples = combinaisoncouples.get(combinaisoncoupleNbr);
+            for (CouplesBalleTrouCombines.CoupleBalleTrou couple:couples) {
+                Ball copieBalle = Ball.createNewInstance(couple.balle);
+                nouveauPlanResolu = getPath(copieBalle, rows, couple.trou);
+                printChemin(nouveauPlanResolu,copieBalle,couple.trou);
+                reinitialiserStrategies();
+            }
+            return nouveauPlanResolu;
         } catch (ToutRefaireAvecNouveauxCouples e) {
             reinitialiserStrategies();
-            System.out.println("CHANGER COUPLES");
-            if (strategieNumber== strategies.size()-1) throw new NonResoluException();
-            printChemin(initialMap,new Ball(),new Trou());
-            return toutRecommencerAvecDifferentsCouples();
+            toutRecommencerAvecDifferentsCouples();
+            return jouerChaqueCouple(copieOriginal);
         }
-        if (isRestEncoreTrous(nouveauPlan)) initialiserJeu(nouveauPlan);
-        return nouveauPlan;
     }
 
 
@@ -343,8 +357,7 @@ public class MapAnalyzer {
 
     public void printChemin(List<String> rows, Ball balle, Trou trou) {
         ArrayList rowsToPrint = new ArrayList(Arrays.asList(rows.toArray()));
-        compteur++;
-        System.out.println(compteur+ " "+ balle.imprimeStak());
+        System.out.println("stack de la balle "+ balle.imprimeStak());
         changeCharAt(rowsToPrint,balle.x,balle.y,"B");
         changeCharAt(rowsToPrint,trou.x,trou.y,"T");
         System.out.println("-----");

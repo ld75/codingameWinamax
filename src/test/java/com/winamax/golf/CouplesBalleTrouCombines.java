@@ -1,31 +1,29 @@
 package com.winamax.golf;
 
-import org.junit.jupiter.api.extension.ExtensionContext;
-
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.List;
+import java.util.stream.Collector;
 
 public class CouplesBalleTrouCombines {
     public List<List<CoupleBalleTrou>> toutJeuxCouples= new ArrayList<>();
     private int jeuNumero=0;
-    int coupleNumero=0;
     private int ballenbr=0;
     private int trounbr=0;
 
-    public void addCouple(Ball ball, Trou trou) {
-        toutJeuxCouples.get(jeuNumero).add(new CoupleBalleTrou(ball,trou));
+
+    public void combinerDeuxsens(List<Ball> balles, List<Trou> trous) {
+        combiner(balles, trous);
+        Deque<Trou> trouInverses =trous.stream().collect(Collector.of(ArrayDeque::new,(deq, t) -> deq.addFirst(t),(d1, d2) -> { d2.addAll(d1); return d2; }));
+        combiner(balles, new ArrayList<>(trouInverses));
+        jeuNumero=0;
     }
 
-    public CoupleBalleTrou getProchainCoupleDeCeJeu() {
-        CoupleBalleTrou ret = toutJeuxCouples.get(jeuNumero).get(coupleNumero);
-        coupleNumero++;
-        return ret;
-    }
-
-    public void combiner(List<Ball> balles, List<Trou> trous) {
-        int nbrCouplesUnJeu=balles.size();
+    private void combiner(List<Ball> balles, List<Trou> trous) {
+        int nbrCouplesUnJeu= balles.size();
         int nombreCombinaisons=0;
-        while (nombreCombinaisons<balles.size()*trous.size()) {
+        while (nombreCombinaisons< balles.size()* trous.size()) {
             nombreCombinaisons++;
             if (ballenbr >= nbrCouplesUnJeu) {
                 ballenbr = 0;
@@ -39,9 +37,7 @@ public class CouplesBalleTrouCombines {
             ballenbr++;
             trounbr++;
             if (trounbr >= nbrCouplesUnJeu) trounbr = 0;
-
         }
-        jeuNumero=0;
     }
 
 
@@ -55,7 +51,7 @@ public class CouplesBalleTrouCombines {
     }
     @Override
     public String toString() {
-        return "CoupleBalleTrou{balle=" + balle.x +",trou=" + trou.x +'}';
+        return "CoupleBalleTrou{balle=" + balle.x +","+balle.y+",trou=" + trou.x+","+trou.y +'}';
     }
 }
 }

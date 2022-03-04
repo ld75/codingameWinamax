@@ -232,12 +232,12 @@ public class GolfTest {
     public void plusieursBallesPlusieursTrous_choisirCoupleBalleTrou_choisirCoupleBalleTrou() throws TrouNonTrouveException, JeuIncompletException {
         List<String> rows = new ArrayList<>(List.of("123......",
                                                     "HHH......"));
-        CouplesBalleTrouCombines coupleBalleTrouToutJeux = mapAnalyzer.definirTousLesCouplesBalleTrou(rows);
+        List<List<CouplesBalleTrouCombines.CoupleBalleTrou>> coupleBalleTrouToutJeux = mapAnalyzer.definirTousLesCouplesBalleTrou(rows);
 
-        Assertions.assertEquals(3,coupleBalleTrouToutJeux.toutJeuxCouples.size());
-        Assertions.assertEquals(3,coupleBalleTrouToutJeux.toutJeuxCouples.get(0).size());
+        Assertions.assertEquals(6,coupleBalleTrouToutJeux.size());
+        Assertions.assertEquals(3,coupleBalleTrouToutJeux.get(0).size());
         System.out.println(coupleBalleTrouToutJeux);
-        Assertions.assertTrue(coupleBalleTrouToutJeux.toutJeuxCouples.get(0).get(0).trou.x!=coupleBalleTrouToutJeux.toutJeuxCouples.get(1).get(0).trou.x);
+        Assertions.assertTrue(coupleBalleTrouToutJeux.get(0).get(0).trou.x!=coupleBalleTrouToutJeux.get(1).get(0).trou.x);
 
     }
     @Test
@@ -322,12 +322,23 @@ public class GolfTest {
 
     @Test
     public void strategieEchouent_getPath_toutesStrategiesEssayeesPuisRemonterErreur() throws TrouNonTrouveException {
-        MapAnalyzerRechercheMemoriseeSpy mapAnalyzerSpy = new MapAnalyzerRechercheMemoriseeSpy();
+        MapAnalyzerRechercheMemoriseeEchecSpy mapAnalyzerSpy = new MapAnalyzerRechercheMemoriseeEchecSpy();
         Ball balle= new Ball();
         List<String> rows = new ArrayList();
         Trou trou=new Trou();
         mapAnalyzerSpy.initialiserToutesLesStrategiesDeDeplacement();
         Assertions.assertThrows(ToutRefaireAvecNouveauxCouples.class,()->{mapAnalyzerSpy.analyseRows(balle, rows, trou);});
+        Assertions.assertEquals(24,mapAnalyzerSpy.strategiePlayed.size());
+    }
+
+    @Test
+    public void strategiesReussient_getPath_toutesStrategiesEssayeesPuisRemonterMeilleureSolution() throws TrouNonTrouveException, ToutRefaireAvecNouveauxCouples {
+        MapAnalyzerRechercheMemoriseeSuccesSpy mapAnalyzerSpy = new MapAnalyzerRechercheMemoriseeSuccesSpy();
+        Ball balle= new Ball();
+        List<String> rows = new ArrayList<>(List.of("2.H.H.2"));
+        Trou trou=new Trou();
+        mapAnalyzerSpy.initialiserToutesLesStrategiesDeDeplacement();
+        mapAnalyzerSpy.analyseRows(balle, rows, trou);
         Assertions.assertEquals(24,mapAnalyzerSpy.strategiePlayed.size());
     }
     @Test
@@ -448,13 +459,13 @@ public void flechesBellesEtTrousCroisees_jeu_eviterCroisementFlechesBallesEtTrou
 
     @Test
     public void rienNaFonctionne_changerCouplesEtRefaire() {
-        MapAnalyzerRechercheMemoriseeSpy mapAnalyzerSpy = new MapAnalyzerRechercheMemoriseeSpy();
+        MapAnalyzerRechercheMemoriseeEchecSpy mapAnalyzerSpy = new MapAnalyzerRechercheMemoriseeEchecSpy();
         List<String> rows = new ArrayList(List.of(
                 "111",
                 "HHH"));
         Assertions.assertThrows(NonResoluException.class,()->{mapAnalyzerSpy.initialiserJeu(rows);});
         mapAnalyzerSpy.couples.forEach(c->System.out.println(c));
-        Assertions.assertEquals(9,mapAnalyzerSpy.couples.size());
+        Assertions.assertEquals(3,mapAnalyzerSpy.couples.size());// les trois premiers couples de chacun des trois jeux de couples
         System.out.println(mapAnalyzerSpy.couples);
     }
     @Test
@@ -495,10 +506,10 @@ public void flechesBellesEtTrousCroisees_jeu_eviterCroisementFlechesBallesEtTrou
         //">>>..v"
     }
 
-    private class MapAnalyzerRechercheMemoriseeSpy extends MapAnalyzer {
+    private class MapAnalyzerRechercheMemoriseeEchecSpy extends MapAnalyzer {
         public List<List<String>> strategiePlayed = new ArrayList<>();
         public Set<String> couples = new HashSet<>();
-        public MapAnalyzerRechercheMemoriseeSpy() {
+        public MapAnalyzerRechercheMemoriseeEchecSpy() {
             this.strategiePlayed=new ArrayList<>();
             this.couples = new HashSet<>();
         }
@@ -508,6 +519,22 @@ public void flechesBellesEtTrousCroisees_jeu_eviterCroisementFlechesBallesEtTrou
             this.strategiePlayed.add(strategieDirections);
             this.couples.add(Integer.toString(balleOriginale.x)+Integer.toString(trou.x));
             throw new StrategiePerdante(new Ball());
+        }
+    }
+
+    private class MapAnalyzerRechercheMemoriseeSuccesSpy extends MapAnalyzer {
+        public List<List<String>> strategiePlayed = new ArrayList<>();
+        public Set<String> couples = new HashSet<>();
+        public MapAnalyzerRechercheMemoriseeSuccesSpy() {
+            this.strategiePlayed=new ArrayList<>();
+            this.couples = new HashSet<>();
+        }
+
+        @Override
+        public String rechercheMemorisee(Ball balleOriginale, List<String> rowsOriginal, Trou trou, List<String> strategieDirections) throws StrategiePerdante{
+            this.strategiePlayed.add(strategieDirections);
+            this.couples.add(Integer.toString(balleOriginale.x)+Integer.toString(trou.x));
+            return "unesolution";
         }
     }
 

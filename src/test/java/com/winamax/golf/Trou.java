@@ -18,4 +18,12 @@ public class Trou {
         if(this.x==((Ball)o).x && this.y==((Ball)o).y)  return true;
         return false;
     }
+
+    @Override
+    public String toString() {
+        return "Trou{" +
+                "x=" + x+
+                ", y=" + y +
+                '}';
+    }
 }

@@ -102,9 +102,9 @@ public class Ball {
         ret.y=ball.y;
         ret.score=ball.score;
         ret.scoreDecrementalDessai=ball.scoreDecrementalDessai;
-        ret.stackDirection=ball.stackDirection;
-        ret.stackDirectionsFound=ball.stackDirectionsFound;
-        ret.invalidPaths=ball.invalidPaths;
+        ret.stackDirection=(Stack<String>) ball.stackDirection.clone();
+        ret.stackDirectionsFound= new ArrayList(Arrays.asList(ball.stackDirectionsFound.toArray()));
+        ret.invalidPaths= new ArrayList(Arrays.asList(ball.invalidPaths.toArray()));
         return ret;
     }
 
@@ -116,7 +116,7 @@ public class Ball {
         copieOriginale.scoreDecrementalDessai=Actualballe.scoreDecrementalDessai;
         copieOriginale.score=Actualballe.scoreDecrementalDessai;
         copieOriginale.stackDirection=new Stack<>();
-        copieOriginale.invalidPaths=Actualballe.invalidPaths;
+        copieOriginale.invalidPaths=new ArrayList<>();
         return copieOriginale;
     }
 
@@ -159,5 +159,13 @@ public class Ball {
 
     public String imprimeStak() {
         return stackDirection.toString();
+    }
+
+    @Override
+    public String toString() {
+        return "Ball{" +
+                "x=" + x +
+                ", y=" + y +
+                '}';
     }
 }
