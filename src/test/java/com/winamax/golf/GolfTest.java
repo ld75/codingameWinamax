@@ -368,9 +368,10 @@ public class GolfTest {
                                                     "..H",
                                                     ".H1"));
         List<String> res = mapAnalyzer.initialiserJeu( rows);
+        mapAnalyzer.printChemin(res);
         List<String> expect = List.of("v..",
-                                      "v..",
-                                      ">.^");
+                                      ">>.",
+                                      "..<");
         Assertions.assertEquals(expect,res);
     }
     @Test
@@ -481,9 +482,9 @@ public void flechesBellesEtTrousCroisees_jeu_eviterCroisementFlechesBallesEtTrou
             "....H"));
         List<String> res = mapAnalyzer.initialiserJeu( rows);
     List<String> expect = new ArrayList(List.of(
-            ">>>>v",
-            ">>>v.",
-            "...>."));
+            ">v...",
+            "v>>>.",
+            ">>>>."));
     mapAnalyzer.printChemin(res);
     Assertions.assertEquals(expect,res);
     }
@@ -537,11 +538,11 @@ public void flechesBellesEtTrousCroisees_jeu_eviterCroisementFlechesBallesEtTrou
                 ".2..2",
                 "....."));
         List<String> expect = List.of(
-                "v....",
-                "v...<",
-                "v^..^",
-                "v^.^^",
-                ">>>^.");
+                ">>v..",
+                "..>..",
+                ".^..<",
+                ".^..^",
+                ".....");
                 //List.of(
                 //".>>vX",
                 //".....",
@@ -571,9 +572,9 @@ public void flechesBellesEtTrousCroisees_jeu_eviterCroisementFlechesBallesEtTrou
                 "......",
                 "3..H.."));
         List<String> expect = List.of(
-                ">>>.v<",
-                ".>v...",
-                "......",
+                ">>>..v",
+                ".v...<",
+                ".>....",
                 "...>>^",
                 "......",
                 ">>>...");

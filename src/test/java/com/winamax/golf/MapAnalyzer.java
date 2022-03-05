@@ -345,7 +345,7 @@ public class MapAnalyzer {
     }
 
     public void initialiserToutesLesStrategiesDeDeplacement() {
-        CombinaisonBlock combinaison = new CombinaisonBlock("", new ArrayList(Arrays.asList("v,^,<,>".split(","))));
+        CombinaisonBlock combinaison = new CombinaisonBlock("", new ArrayList(Arrays.asList("v,>,^,<".split(","))));
         strategies= combinaison.getToutesCombinaisonsString();
     }
 
