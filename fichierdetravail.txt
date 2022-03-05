@@ -75,11 +75,19 @@ class Solution {
     }
 
     public List<Trou> trouveTrous(List<String> resultRows) throws TrouNonTrouveException {
+        char h = 'H';
+        return trouveCharEtTransformeEnTrous(resultRows, h);
+    }
+    public List<Trou> trouveLacs(List<String> resultRows) throws TrouNonTrouveException {
+        char h = 'X';
+        return trouveCharEtTransformeEnTrous(resultRows, h);
+    }
+    private List<Trou> trouveCharEtTransformeEnTrous(List<String> resultRows, char h) throws TrouNonTrouveException {
         List<Trou> trous = new ArrayList();
-        for(int y=0; y<resultRows.size(); y++){
-            for (int x=0; x<resultRows.get(y).length(); x++)
+        for(int y = 0; y< resultRows.size(); y++){
+            for (int x = 0; x< resultRows.get(y).length(); x++)
             {
-                if (resultRows.get(y).charAt(x)=='H') trous.add(new Trou(new Integer[]{x,y}));
+                if (resultRows.get(y).charAt(x)== h) trous.add(new Trou(new Integer[]{x,y}));
             }
         }
         if (trous.size()==0) throw new TrouNonTrouveException();
@@ -352,7 +360,18 @@ class Solution {
         initialiserToutesLesStrategiesDeDeplacement();
         combinaisoncouples = definirTousLesCouplesBalleTrou(rows);
         if (initialMap==null) initialMap= new ArrayList(Arrays.asList(rows.toArray()));
-        return jouerChaqueCouple(rows);
+        List<String> resAvecLacs = jouerChaqueCouple(rows);
+        return enleverLacs(resAvecLacs);
+    }
+
+    public List<String> enleverLacs(List<String> resAvecLacs) {
+        try {
+            List<Trou> lacs = trouveLacs(resAvecLacs);
+            lacs.stream().forEach(l -> {removeThisTrouFromMap(resAvecLacs, l);});
+            return resAvecLacs;
+        } catch (TrouNonTrouveException e) {
+            return resAvecLacs;
+        }
     }
 
     public void initialiserToutesLesStrategiesDeDeplacement() {

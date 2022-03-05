@@ -180,10 +180,12 @@ public class MapAnalyzer {
         return rechercheMemorisee(copieOriginaleEtExperience, rowsOriginal, trou, strategieDirections);
     }
 
-    private void avanceBalleDansDirection(Ball balle, ArrayList<String> rowsCopie, String direction) {
-        changeCharAt(rowsCopie, balle.x, balle.y, direction);
-        changeBallPosition(balle, direction, rowsCopie, new Trou());
-        balle.ajouteChemin(direction);
+    public void avanceBalleDansDirection(Ball balle, ArrayList<String> rowsCopie, String direction) {
+         for (int scorestant=balle.score; scorestant>-1; scorestant--) {
+             changeCharAt(rowsCopie, balle.x, balle.y, direction);
+             changeBallPosition(balle, direction, rowsCopie, new Trou());
+             balle.ajouteChemin(direction);
+         }
     }
 
     private boolean isAfaitCetteSerieDeDirections(List<String> strategieDirections, int iddirections) {
@@ -221,10 +223,12 @@ public class MapAnalyzer {
 
     public void changeBallPosition(Ball balle, String direction, List<String> rows, Trou trouCible){
         if (isBallCanMoove(balle, direction, rows, trouCible)) balle.decrementeScore();
-        if (canMooveRight(balle, direction, rows, trouCible)) balle.x++;
-        if (canMooveLeft(balle, direction, rows, trouCible)) balle.x--;
-        if (canMooveDown(balle, direction, rows, trouCible)) balle.y++;
-        if (canMooveUp(balle, direction, rows, trouCible)) balle.y--;
+        else return;
+        int previousscore = balle.score+1;
+        if (direction==">"&& canMooveRight(balle,rows, trouCible)) balle.x=balle.x+previousscore;
+        if (direction=="<"&& canMooveLeft(balle,rows, trouCible)) balle.x=balle.x-previousscore;
+        if (direction=="v"&& canMooveDown(balle,rows, trouCible)) balle.y=balle.y+previousscore;
+        if (direction=="^"&& canMooveUp(balle,  rows, trouCible)) balle.y=balle.y-previousscore;
     }
 
     public void rebrousseChemin(Ball balle, String direction){
@@ -236,19 +240,60 @@ public class MapAnalyzer {
         if (direction.equals("^")) balle.y--;
         balle.incrementeScore();
     }
-    private boolean isBallCanMoove(Ball balle, String direction, List<String> rows, Trou trouCible) {
+    public boolean isBallCanMoove(Ball balle, String direction, List<String> rows, Trou trouCible) {
         if (balle.score==-1) return false;
-        return canMooveDown(balle, direction, rows,trouCible) || canMooveLeft(balle, direction,rows,trouCible) || canMooveRight(balle, direction, rows,trouCible) || canMooveUp(balle, direction,rows,trouCible);
+        if (direction.equals("v")) return canMooveDown(balle, rows,trouCible);
+        if(direction.equals("<")) return canMooveLeft(balle,rows,trouCible);
+        if(direction.equals(">")) return canMooveRight(balle,rows,trouCible);
+        if(direction.equals("^"))return canMooveUp(balle,rows,trouCible);
+        return false;
     }
 
-    private boolean canMooveUp(Ball balle, String direction, List<String> rows, Trou trouCible) {
-        return direction.equals("^") && balle.y > 0 &&
-                isValidDest(balle, balle.x,balle.y-1, rows, trouCible);
+    private boolean canMooveUp(Ball balle, List<String> rows, Trou trouCible) {
+        int posy = balle.y;
+        for (int pas = 0; pas <= balle.score-1; pas++) {
+            posy--;
+            boolean isDansPlan = posy > -1;
+            boolean validDest = isValidDest(balle, balle.x, posy, rows, trouCible);
+            if (!(isDansPlan && validDest)) return false;
+        }
+        return true;
     }
 
-    private boolean canMooveDown(Ball balle, String direction, List<String> rows, Trou trouCible) {
-        return (direction.equals("v") && balle.y < rows.size()-1 &&
-                isValidDest(balle,balle.x,balle.y+1, rows,trouCible));
+
+
+    private boolean canMooveLeft(Ball balle, List<String> rows, Trou trouCible) {
+        int posx = balle.x;
+        for (int pas = 0; pas <= balle.score-1; pas++) {
+            posx--;
+            boolean isDansPlan = posx > -1;
+            boolean validDest = isValidDest(balle, posx, balle.y, rows, trouCible);
+            if (!(isDansPlan && validDest)) return false;
+        }
+        return true;
+    }
+
+    private boolean canMooveRight(Ball balle, List<String> rows, Trou trouCible) {
+        int posx = balle.x;
+        for (int pas = 0; pas <= balle.score-1; pas++) {
+            posx++;
+            boolean isDansPlan = posx < rows.get(0).length();
+            boolean validDest = isValidDest(balle, posx, balle.y, rows, trouCible);
+            if (!(isDansPlan && validDest)) return false;
+        }
+        return true;
+    }
+
+
+    private boolean canMooveDown(Ball balle, List<String> rows, Trou trouCible) {
+        int posy = balle.y;
+        for (int pas = 0; pas <= balle.score-1; pas++) {
+            posy++;
+            boolean isDansPlan = posy < rows.size();
+            boolean validDest = isValidDest(balle, balle.x, posy, rows, trouCible);
+            if (!(isDansPlan && validDest)) return false;
+        }
+        return true;
     }
 
     private boolean isValidDest(Ball balle, int x, int y, List<String> rows, Trou trouCible) {
@@ -259,17 +304,6 @@ public class MapAnalyzer {
 
     private boolean isResolvedTrouInThisPosition(int x,int y) {
         return resolvedTrous.stream().filter(trou -> trou.x==x&&trou.y==y).collect(Collectors.toList()).size()>0;
-    }
-
-    private boolean canMooveLeft(Ball balle, String direction, List<String> rows, Trou trouCible) {
-        return direction.equals("<") && balle.x > 0 &&
-                isValidDest(balle, balle.x-1,balle.y, rows, trouCible);
-    }
-
-    private boolean canMooveRight(Ball balle, String direction, List<String> rows, Trou trouCible) {
-        return direction.equals(">") && rows.get(0).length()-1 > balle.x
-                &&
-                isValidDest(balle, balle.x+1,balle.y, rows, trouCible);
     }
 
     private int getWith(String dimensions) {
