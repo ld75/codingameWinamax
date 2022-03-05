@@ -349,8 +349,17 @@ public class GolfTest {
         Assertions.assertEquals(expect,rows);
     }
     @Test
+    public void enleverlacs()
+    {
+        List<String> rows = new ArrayList<>(List.of("2.X",
+                "..H",
+                ".H1"));
+
+        List<String> res = mapAnalyzer.enleverLacs(rows);
+        System.out.println(res);
+    }
+    @Test
     public void test2() throws TrouNonTrouveException, JeuIncompletException, NonResoluException {
-        //taille: 3 3
         //ligne: 2.X
         //ligne: ..H
         //ligne: .H1
@@ -360,8 +369,8 @@ public class GolfTest {
                                                     ".H1"));
         List<String> res = mapAnalyzer.initialiserJeu( rows);
         List<String> expect = List.of("v..",
-                                      ">>.",
-                                      "..<");
+                                      "v..",
+                                      ">.^");
         Assertions.assertEquals(expect,res);
     }
     @Test
@@ -528,11 +537,17 @@ public void flechesBellesEtTrousCroisees_jeu_eviterCroisementFlechesBallesEtTrou
                 ".2..2",
                 "....."));
         List<String> expect = List.of(
-                ".>>vX",
-                ".....",
-                ".^..<",
-                ".^..^",
-                ".....");
+                "v....",
+                "v...<",
+                "v^..^",
+                "v^.^^",
+                ">>>^.");
+                //List.of(
+                //".>>vX",
+                //".....",
+                //".^..<",
+                //".^..^",
+                //".....");
         List<String> res = mapAnalyzer.initialiserJeu( rows);
         mapAnalyzer.printChemin(res);
         Assertions.assertEquals(expect,res);
