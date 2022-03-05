@@ -14,9 +14,9 @@ public class CouplesBalleTrouCombines {
 
 
     public void combinerDeuxsens(List<Ball> balles, List<Trou> trous) {
-        combiner(balles, trous);
         Deque<Trou> trouInverses =trous.stream().collect(Collector.of(ArrayDeque::new,(deq, t) -> deq.addFirst(t),(d1, d2) -> { d2.addAll(d1); return d2; }));
         combiner(balles, new ArrayList<>(trouInverses));
+        combiner(balles, trous);
         jeuNumero=0;
     }
 
