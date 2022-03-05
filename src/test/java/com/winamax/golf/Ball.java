@@ -68,7 +68,7 @@ public class Ball {
     }
 
     public boolean isAEssayeChaqueScore() {
-        return this.scoreDecrementalDessai <2;
+        return this.scoreDecrementalDessai <1;
     }
 
     public void sauveParcourtEtReinitStack() {

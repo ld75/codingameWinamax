@@ -1,13 +1,43 @@
-package com.winamax.golf;
-
+import java.util.*;
+import java.io.*;
+import java.math.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Collector;
+/**
+ * Auto-generated code below aims at helping you parse
+ * the standard input according to the problem statement.
+ **/
+class Solution {
 
-public class MapAnalyzer {
+    public static void main(String args[]) {
+        MapAnalyzer mapAnalyzer = new MapAnalyzer();
+        Scanner in = new Scanner(System.in);
+        int width = in.nextInt();
+        int height = in.nextInt();
+       // System.out.println("taille: "+width + " " +height);
+        List<String> rows = new ArrayList();
+        for (int i = 0; i < height; i++) {
+            String row = in.next();
+           // System.out.println("ligne: "+row);
+            rows.add(row);
+        }
+        try{
+            List<String> res = mapAnalyzer.initialiserJeu(rows);
+            mapAnalyzer.printrowsArrayCodinggame(res);
+         }
+         catch(Exception e){ e.printStackTrace();}
+    }
+
+}
+
+
+
+ class MapAnalyzer {
     int ballenbr = 0;  int trounbr=0; int combinaisoncoupleNbr =0;
     int strategieNumber=0;
     List<String> strategies;
@@ -78,13 +108,13 @@ public class MapAnalyzer {
                 balleExperimentee= ballExperimenteeEtMapConsequent.getBalle();
                 rowsConsequent = ballExperimenteeEtMapConsequent.getRows();
             } catch (StrategiePerdante e) {
-                System.out.println("Strategie "+strategieNumber+" perdante POUR CETTE BALLE");
+                //System.out.println("Strategie "+strategieNumber+" perdante POUR CETTE BALLE");
                 balleExperimentee= e.getBallWithInvalidPaths();
                 rowsConsequent=rowsOriginal;
             }
                 try {strategieDirection = pickupNextStrategie();}catch(IndexOutOfBoundsException e){break;}
                 balleOriginal = Ball.copieExperience(balleExperimentee,balleOriginal);
-                System.out.println("NOUVELLE STRATEGIE NUMERO "+strategieNumber+" POUR CETTE BALLE :"+ strategieDirection);
+                //System.out.println("NOUVELLE STRATEGIE NUMERO "+strategieNumber+" POUR CETTE BALLE :"+ strategieDirection);
         }
 
         String cheminParcouruLePlusCourt = balleExperimentee.getCheminParcouruLePlusCourt();
@@ -95,7 +125,7 @@ public class MapAnalyzer {
     private List<String> pickupFirstStrategie() {
         reinitialiserStrategies();
         List<String> ret = Arrays.asList(strategies.get(strategieNumber).split(","));
-        System.out.println("STRATEGIE: "+strategieNumber+" " +ret);
+        //System.out.println("STRATEGIE: "+strategieNumber+" " +ret);
         return ret;
     }
 
@@ -103,7 +133,7 @@ public class MapAnalyzer {
         strategieNumber++;
         if (isToutesLesStrategiesOntJoue()) throw new IndexOutOfBoundsException();
         List<String> ret = Arrays.asList(strategies.get(strategieNumber).split(","));
-        System.out.println("STRATEGIE: "+strategieNumber+" " +ret);
+        //System.out.println("STRATEGIE: "+strategieNumber+" " +ret);
         return ret;
     }
 
@@ -124,7 +154,7 @@ public class MapAnalyzer {
     }
 
     public BallEtMap rechercheMemorisee(Ball balleOriginale, List<String> rowsOriginal, Trou trou, List<String> strategieDirections) throws StrategiePerdante {
-        System.out.println("NOUVELLE RECHERCHE MEMORISEE "+balleOriginale + " Trou: "+trou);
+        //System.out.println("NOUVELLE RECHERCHE MEMORISEE "+balleOriginale + " Trou: "+trou);
         Ball balle=Ball.createNewInstance(balleOriginale);
         ArrayList<String> rowsCopie = new ArrayList(rowsOriginal);
         int iddirections=0;
@@ -141,7 +171,7 @@ public class MapAnalyzer {
                 if (isHTrouve(rowsCopie,trou)) {
                     balle.sauveParcourtEtReinitStack();
                     if (balle.isAEssayeChaqueScore()) {
-                        System.out.println("TROUVE!");
+                        //System.out.println("TROUVE!");
                         return new BallEtMap(balle,rowsCopie);
                     }
                     else return reesayeAvecPlusPetitScore(balleOriginale, rowsOriginal, trou, strategieDirections, balle);
@@ -166,7 +196,7 @@ public class MapAnalyzer {
     }
 
     private BallEtMap reesayeAvecPlusPetitScore(Ball balleOriginale, List<String> rowsOriginal, Trou trou, List<String> strategieDirections, Ball balle) throws StrategiePerdante {
-        System.out.println("NOUVELLE RECHERCHE MEMORISEE PLUS COURTE");
+        //System.out.println("NOUVELLE RECHERCHE MEMORISEE PLUS COURTE");
         balle.decrementeScoreDessai();
         Ball copieOriginaleEtExperience = Ball.copieExperience(balle,balleOriginale);
         return rechercheMemorisee(copieOriginaleEtExperience, rowsOriginal, trou, strategieDirections);
@@ -334,7 +364,7 @@ public class MapAnalyzer {
         resolvedTrous.clear();
         combinaisoncoupleNbr++;
         if (combinaisoncoupleNbr>combinaisoncouples.size()-1) throw new NonResoluException();
-        System.out.println("CHANGER COUPLES "+combinaisoncouples.get(combinaisoncoupleNbr));
+        //System.out.println("CHANGER COUPLES "+combinaisoncouples.get(combinaisoncoupleNbr));
     }
     private List<String> jouerChaqueCouple(List<String> rows) throws TrouNonTrouveException, JeuIncompletException, NonResoluException {
         List<String> nouveauPlanResolu = null;
@@ -372,7 +402,7 @@ public class MapAnalyzer {
 
     public void printChemin(List<String> rows, Ball balle, Trou trou) {
         ArrayList rowsToPrint = new ArrayList(Arrays.asList(rows.toArray()));
-        System.out.println("stack de la balle "+ balle.imprimeStak());
+        //System.out.println("stack de la balle "+ balle.imprimeStak());
         changeCharAt(rowsToPrint,trou.x,trou.y,"T");
         changeCharAt(rowsToPrint,balle.x,balle.y,"B");
         printrowsArray(rowsToPrint);
@@ -383,10 +413,358 @@ public class MapAnalyzer {
     }
 
     private void printrowsArray(ArrayList rowsToPrint) {
-        System.out.println("-----");
+        //System.out.println("-----");
+       // rowsToPrint.forEach(System.out::println);
+        //System.out.println("-----");
+    }
+    public void printrowsArrayCodinggame(List<String> rowsToPrint) {
         rowsToPrint.forEach(System.out::println);
-        System.out.println("-----");
+    }
+
+}
+ class Trou {
+    public Integer y=0;
+    public Integer x=0;
+
+    public Trou(Integer[] hPosition) {
+        this.x=hPosition[0];
+        this.y=hPosition[1];
+    }
+
+    public Trou() {
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if(this.x==((Ball)o).x && this.y==((Ball)o).y)  return true;
+        return false;
+    }
+
+    @Override
+    public String toString() {
+        return "Trou{" +
+                "x=" + x+
+                ", y=" + y +
+                '}';
+    }
+}
+
+class CouplesBalleTrouCombines {
+    public List<List<CoupleBalleTrou>> toutJeuxCouples= new ArrayList<>();
+    private int jeuNumero=0;
+    private int ballenbr=0;
+    private int trounbr=0;
+
+
+    public void combinerDeuxsens(List<Ball> balles, List<Trou> trous) {
+        combiner(balles, trous);
+        Deque<Trou> trouInverses =trous.stream().collect(Collector.of(ArrayDeque::new,(deq, t) -> deq.addFirst(t),(d1, d2) -> { d2.addAll(d1); return d2; }));
+        combiner(balles, new ArrayList<>(trouInverses));
+        jeuNumero=0;
+    }
+
+    private void combiner(List<Ball> balles, List<Trou> trous) {
+        int nbrCouplesUnJeu= balles.size();
+        int nombreCombinaisons=0;
+        while (nombreCombinaisons< balles.size()* trous.size()) {
+            nombreCombinaisons++;
+            if (ballenbr >= nbrCouplesUnJeu) {
+                ballenbr = 0;
+                jeuNumero++;
+                trounbr++;
+                if (trounbr >= nbrCouplesUnJeu) trounbr = 0;
+            }
+            if (toutJeuxCouples.size() <= jeuNumero) toutJeuxCouples.add(new ArrayList<>());
+            List<CoupleBalleTrou> jeudeCouples = toutJeuxCouples.get(jeuNumero);
+            jeudeCouples.add(new CoupleBalleTrou(balles.get(ballenbr), trous.get(trounbr)));
+            ballenbr++;
+            trounbr++;
+            if (trounbr >= nbrCouplesUnJeu) trounbr = 0;
+        }
     }
 
 
+    public class CoupleBalleTrou {
+    public final Trou trou;
+    public final Ball balle;
+
+    public CoupleBalleTrou(Ball ball, Trou trou) {
+        this.balle = ball;
+        this.trou = trou;
+    }
+    @Override
+    public String toString() {
+        return "CoupleBalleTrou{balle=" + balle.x +","+balle.y+",trou=" + trou.x+","+trou.y +'}';
+    }
+}
+}
+class Ball {
+    public int scoreDecrementalDessai;
+    public int score;
+    public int x;
+    public int y;
+    private Stack<String> stackDirection= new Stack();
+    private List<String> stackDirectionsFound = new ArrayList<>();
+    private LinkedList<Integer[]> blocageQueue = new LinkedList<>();
+    private List<String> invalidPaths = new ArrayList<>();
+
+    public Ball(int scoreBalle, int x, int y) {
+        this.score=scoreBalle;
+        this.scoreDecrementalDessai =scoreBalle;
+        this.x= x;
+        this.y=y;
+    }
+
+    public Ball() {
+
+    }
+
+    public String removeLastStep() {
+        try {
+            String prev = this.stackDirection.pop();
+            return prev;
+        } catch (Exception e) {
+            return "0";
+        }
+    }
+    public String getLastDirection() {
+        try {
+            String prev = this.stackDirection.peek();
+            return prev;
+
+        } catch (Exception e) {
+            return "0";
+        }
+    }
+
+    public String getCheminParcouruLePlusCourt() {
+        String winnerPath="";
+        for (int i = 0; i< stackDirectionsFound.size(); i++)
+        {
+            if (winnerPath.length()==0) winnerPath= stackDirectionsFound.get(i);
+            if (stackDirectionsFound.get(i).length()<winnerPath.length()) winnerPath= stackDirectionsFound.get(i);
+        }
+        return winnerPath;
+    }
+
+    private String stackToString() {
+        return stackDirection.stream().reduce((first, second) -> first.concat(second)).get();
+    }
+
+    public void ajouteChemin(String direction) {
+        this.stackDirection.push(direction);
+    }
+
+    public void decrementeScore() {
+        score--;
+    }
+
+    public void incrementeScore() {
+        score++;
+    }
+
+    public boolean isAEssayeChaqueScore() {
+        return this.scoreDecrementalDessai <1;
+    }
+
+    public void sauveParcourtEtReinitStack() {
+        this.stackDirectionsFound.add(stackToString());
+        this.stackDirection=new Stack<>();
+    }
+
+    public void decrementeScoreDessai() {
+        scoreDecrementalDessai--;
+        score=scoreDecrementalDessai;
+    }
+
+    public void ajouteStackDeblocage(ArrayList<String> rowsCopie) {
+        MapAnalyzer.changeCharAt(rowsCopie, x, y, "O");
+        addBlocage(rowsCopie,x,y);
+    }
+
+    private void addBlocage(ArrayList<String> rowsCopie,int x, int y) {
+        if (blocageQueue.size()>2) deleteFirstBlocage(rowsCopie);
+        blocageQueue.add(new Integer[]{x,y});
+    }
+
+    private void deleteFirstBlocage(ArrayList<String> rowsCopie) {
+        Integer[] oldBlocage = blocageQueue.removeFirst();
+        MapAnalyzer.changeCharAt(rowsCopie, oldBlocage[0], oldBlocage[1], ".");
+    }
+
+    public static Ball createNewInstance(Ball ball) {
+        Ball ret = new Ball();
+        ret.x=ball.x;
+        ret.y=ball.y;
+        ret.score=ball.score;
+        ret.scoreDecrementalDessai=ball.scoreDecrementalDessai;
+        ret.stackDirection=(Stack<String>) ball.stackDirection.clone();
+        ret.stackDirectionsFound= new ArrayList(Arrays.asList(ball.stackDirectionsFound.toArray()));
+        ret.invalidPaths= new ArrayList(Arrays.asList(ball.invalidPaths.toArray()));
+        return ret;
+    }
+
+    public static Ball copieExperience(Ball Actualballe, Ball originalBalle) {
+        Ball copieOriginale = createNewInstance(originalBalle);
+        List<String> stackDirectionLePlusCourt = new ArrayList<>();
+        stackDirectionLePlusCourt.add(Actualballe.getCheminParcouruLePlusCourt());
+        copieOriginale.stackDirectionsFound=stackDirectionLePlusCourt;
+        copieOriginale.scoreDecrementalDessai=Actualballe.scoreDecrementalDessai;
+        copieOriginale.score=Actualballe.scoreDecrementalDessai;
+        copieOriginale.stackDirection=new Stack<>();
+        copieOriginale.invalidPaths=new ArrayList<>();
+        return copieOriginale;
+    }
+
+    public boolean isATrouveChemin() {
+        return stackDirectionsFound.size()>0;
+    }
+
+    public void invaliderLeCheminComplet() {
+        if (score==-1) {
+            invalidPaths.add(stackToString());
+            //System.out.println("invalider "+stackToString()+ " scoreDecremental "+this.scoreDecrementalDessai);
+            //System.out.println("");
+        }
+    }
+
+    public List<String> getInvalidPaths() {
+        return this.invalidPaths;
+    }
+
+    public void setInvalidPaths(List<String> invalidPaths) {
+        this.invalidPaths=invalidPaths;
+    }
+
+
+    public boolean isTourneEnRond() {
+        Set set = new HashSet() ;
+        set.addAll(this.invalidPaths) ;
+        return this.invalidPaths.size()!=set.size();
+    }
+    @Override
+    public boolean equals(Object o)
+    {
+        if(this.x==((Ball)o).x && this.y==((Ball)o).y)  return true;
+        return false;
+    }
+
+    public void resetInvalidPaths() {
+        this.invalidPaths=new ArrayList<>();
+    }
+
+    public String imprimeStak() {
+        return stackDirection.toString();
+    }
+
+    @Override
+    public String toString() {
+        return "Ball{" +
+                "x=" + x +
+                ", y=" + y +
+                '}';
+    }
+}
+
+class ToutRefaireAvecNouveauxCouples extends Exception {
+}
+
+class TrouNonTrouveException extends Exception {
+    public TrouNonTrouveException(String chemin_interdit) {
+        super(chemin_interdit);
+    }
+
+    public TrouNonTrouveException() {
+
+    }
+}
+class NonResoluException extends Exception {
+}
+ class StrategiePerdante extends Exception {
+    private Ball ballWithInvalidPaths;
+
+    public Ball getBallWithInvalidPaths() {
+        return this.ballWithInvalidPaths;
+    }
+    StrategiePerdante(Ball balle)
+    {
+        this.ballWithInvalidPaths=balle;
+    }
+}
+
+class BallEtMap {
+    private final ArrayList<String> rows;
+    private final Ball balle;
+
+    public BallEtMap(Ball balle, ArrayList<String> rowsCopie) {
+        this.balle=balle;
+        this.rows=rowsCopie;
+    }
+
+
+    public Ball getBalle() {
+        return balle;
+    }
+
+    public ArrayList<String> getRows() {
+        return this.rows;
+    }
+
+    public String getCheminLePlusCourt() {
+        return this.balle.getCheminParcouruLePlusCourt();
+
+    }
+}
+class JeuIncompletException extends Exception {
+}
+class CombinaisonBlock {
+    public String prefix="";
+    public List<String> reste=new ArrayList<>();
+
+    public CombinaisonBlock(String character, List<String> reste) {
+        this.prefix=character;
+        this.reste = reste;
+    }
+
+    public List<CombinaisonBlock> combiner() {
+        if (this.reste.size()==0) return Arrays.asList(new CombinaisonBlock[] {this});
+        List<CombinaisonBlock> res = new ArrayList();
+        for (int i=0; i<this.reste.size(); i++){
+            String comma = this.prefix.length()==0?"":",";
+            String newprefix=this.prefix.concat(comma+this.reste.get(i));
+            ArrayList reste2 = new ArrayList(Arrays.asList(reste.toArray()));
+            reste2.remove(i);
+            res.add(new CombinaisonBlock(newprefix,reste2));
+        }
+        return res;
+    }
+
+    public List<CombinaisonBlock> getToutesCombinaisons(){
+        List<CombinaisonBlock> resultatFinal = new ArrayList<>();
+        resultatFinal.add(this);
+        int previousSize =0;
+        while (resultatFinal.size()!=previousSize){
+            int iterateur=0;
+            previousSize=resultatFinal.size();
+            while (iterateur<previousSize) {
+                CombinaisonBlock parent = resultatFinal.get(0);
+                resultatFinal.remove(parent);
+                resultatFinal.addAll(parent.combiner());
+                iterateur++;
+            }
+        }
+        return resultatFinal;
+    }
+
+    @Override
+    public String toString() {
+        return "CombinaisonBlock{" +
+                "prefix='" + prefix + '\'' +
+                '}';
+    }
+
+    public List<String> getToutesCombinaisonsString() {
+        return this.getToutesCombinaisons().stream().map(c->c.prefix).collect(Collectors.toList());
+    }
 }

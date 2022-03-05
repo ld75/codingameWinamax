@@ -2,7 +2,7 @@ package com.winamax.golf;
 
 import java.util.List;
 
-public class StrategiePerdante extends Throwable {
+public class StrategiePerdante extends Exception {
     private Ball ballWithInvalidPaths;
 
     public Ball getBallWithInvalidPaths() {

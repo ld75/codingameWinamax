@@ -1,4 +1,4 @@
 package com.winamax.golf;
 
-public class JeuIncompletException extends Throwable {
+public class JeuIncompletException extends Exception {
 }

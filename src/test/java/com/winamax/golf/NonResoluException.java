@@ -1,4 +1,4 @@
 package com.winamax.golf;
 
-public class NonResoluException extends Throwable {
+public class NonResoluException extends Exception {
 }
