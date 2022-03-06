@@ -81,17 +81,17 @@ public class Ball {
         score=scoreDecrementalDessai;
     }
 
-    public void ajouteStackDeblocage(ArrayList<String> rowsCopie) {
+    public void ajouteStackDeblocage(List<String> rowsCopie) {
         MapAnalyzer.changeCharAt(rowsCopie, x, y, "O");
         addBlocage(rowsCopie,x,y);
     }
 
-    private void addBlocage(ArrayList<String> rowsCopie,int x, int y) {
+    private void addBlocage(List<String> rowsCopie,int x, int y) {
         if (blocageQueue.size()>2) deleteFirstBlocage(rowsCopie);
         blocageQueue.add(new Integer[]{x,y});
     }
 
-    private void deleteFirstBlocage(ArrayList<String> rowsCopie) {
+    private void deleteFirstBlocage(List<String> rowsCopie) {
         Integer[] oldBlocage = blocageQueue.removeFirst();
         MapAnalyzer.changeCharAt(rowsCopie, oldBlocage[0], oldBlocage[1], ".");
     }

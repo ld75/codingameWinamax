@@ -12,10 +12,15 @@ public class Trou {
     public Trou() {
     }
 
+    public Trou(int x, int y) {
+        this.x=x;
+        this.y=y;
+    }
+
     @Override
     public boolean equals(Object o)
     {
-        if(this.x==((Ball)o).x && this.y==((Ball)o).y)  return true;
+        if(this.x==((Trou)o).x && this.y==((Trou)o).y)  return true;
         return false;
     }
 
