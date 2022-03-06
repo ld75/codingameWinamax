@@ -231,7 +231,7 @@ public class GolfTest {
     public void cinqBallescinqTrous_choisirCoupleBalleTrou_choisirCoupleBalleTrou() throws TrouNonTrouveException, JeuIncompletException {
         List<String> rows = new ArrayList<>(List.of("12345....",
                                                     "HHHHH....."));
-        List<List<CouplesBalleTrouCombines.CoupleBalleTrou>> coupleBalleTrouToutJeux = mapAnalyzer.definirTousLesCouplesBalleTrou(rows);
+        List<List<CoupleBalleTrou>> coupleBalleTrouToutJeux = mapAnalyzer.definirTousLesCouplesBalleTrou(rows);
 
         Assertions.assertEquals(6,coupleBalleTrouToutJeux.size());
         Assertions.assertEquals(5,coupleBalleTrouToutJeux.get(0).size());
@@ -242,7 +242,7 @@ public class GolfTest {
     public void plusieursBallesPlusieursTrous_choisirCoupleBalleTrou_choisirCoupleBalleTrou() throws TrouNonTrouveException, JeuIncompletException {
         List<String> rows = new ArrayList<>(List.of("123......",
                 "HHH......"));
-        List<List<CouplesBalleTrouCombines.CoupleBalleTrou>> coupleBalleTrouToutJeux = mapAnalyzer.definirTousLesCouplesBalleTrou(rows);
+        List<List<CoupleBalleTrou>> coupleBalleTrouToutJeux = mapAnalyzer.definirTousLesCouplesBalleTrou(rows);
 
         Assertions.assertEquals(6,coupleBalleTrouToutJeux.size());
         Assertions.assertEquals(3,coupleBalleTrouToutJeux.get(0).size());
@@ -252,7 +252,7 @@ public class GolfTest {
     @Test
     public void combinaisonsDeStrategies2(){
         String test= "1,2";
-        CombinaisonBlock combinaison = new CombinaisonBlock("", new ArrayList(Arrays.asList(test.split(","))));
+        CombinaisonBlock combinaison = new CombinaisonBlockString("", new ArrayList(Arrays.asList(test.split(","))));
         List<CombinaisonBlock> combinaisons = combinaison.combiner();
         Assertions.assertEquals(2,combinaisons.size());
         assertions(combinaisons, "1", 0, Arrays.asList("2"));
@@ -261,7 +261,7 @@ public class GolfTest {
     @Test
     public void combinaisonsDeStrategies3(){
         String test= "1,2,3";
-        CombinaisonBlock combinaison = new CombinaisonBlock("", new ArrayList(Arrays.asList(test.split(","))));
+        CombinaisonBlock combinaison = new CombinaisonBlockString("", new ArrayList(Arrays.asList(test.split(","))));
         List<CombinaisonBlock> combinaisons = combinaison.combiner();
         Assertions.assertEquals(3,combinaisons.size());
         assertions(combinaisons, "1", 0, Arrays.asList(new String[]{"2","3"}));
@@ -271,7 +271,7 @@ public class GolfTest {
     }
     @Test
     public void propagCombinasion(){
-        CombinaisonBlock block = new CombinaisonBlock("1", Arrays.asList(new String[]{"2"}));
+        CombinaisonBlock block = new CombinaisonBlockString("1", Arrays.asList(new String[]{"2"}));
         List<CombinaisonBlock> res = block.combiner();
         Assertions.assertEquals(1,res.size());
         Assertions.assertEquals("1,2",res.get(0).prefix);
@@ -280,14 +280,14 @@ public class GolfTest {
     @Test
     public void cannotCombineAnymore()
     {
-        CombinaisonBlock block = new CombinaisonBlock("1", new ArrayList<>());
+        CombinaisonBlock block = new CombinaisonBlockString("1", new ArrayList<>());
         Assertions.assertEquals(block,block.combiner().get(0));
     }
     @Test
     public void demultiplieCombinaisons()
     {
         String test= "1,2,3";
-        CombinaisonBlock combinaison = new CombinaisonBlock("", new ArrayList(Arrays.asList(test.split(","))));
+        CombinaisonBlock combinaison = new CombinaisonBlockString("", new ArrayList(Arrays.asList(test.split(","))));
         List<CombinaisonBlock> combinaisons = combinaison.getToutesCombinaisons();
         Assertions.assertEquals(6,combinaisons.size());
         combinaisons.stream().forEach(c-> System.out.println(c.toString()));
@@ -295,7 +295,7 @@ public class GolfTest {
     @Test
     public void getTouteCombinaisonsDeDirectionsListString() {
         String test = ">,^,<,v";
-        CombinaisonBlock combinaison = new CombinaisonBlock("", new ArrayList(Arrays.asList(test.split(","))));
+        CombinaisonBlock combinaison = new CombinaisonBlockString("", new ArrayList(Arrays.asList(test.split(","))));
         List<String> combinaisons = combinaison.getToutesCombinaisonsString();
         Assertions.assertEquals(24, combinaisons.size());
         combinaisons.stream().forEach(c -> System.out.println(c));

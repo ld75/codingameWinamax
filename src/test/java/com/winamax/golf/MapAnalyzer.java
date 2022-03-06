@@ -14,7 +14,7 @@ public class MapAnalyzer {
 
     private List<Trou> resolvedTrous= new ArrayList();
     private ArrayList initialMap;
-    private List<List<CouplesBalleTrouCombines.CoupleBalleTrou>> combinaisoncouples;
+    private List<List<CoupleBalleTrou>> combinaisoncouples;
 
     public List<String> resoudreBalle(Ball balle, List<String> rows, Trou trou) throws ToutRefaireAvecNouveauxCouples {
         List<String> resultRows = new ArrayList<>();
@@ -340,7 +340,7 @@ public class MapAnalyzer {
     }
 
 
-    public List<List<CouplesBalleTrouCombines.CoupleBalleTrou>> definirTousLesCouplesBalleTrou(List<String> initialMap) throws TrouNonTrouveException, JeuIncompletException {
+    public List<List<CoupleBalleTrou>> definirTousLesCouplesBalleTrou(List<String> initialMap) throws TrouNonTrouveException, JeuIncompletException {
         CouplesBalleTrouCombines couplesBalleTrou = new CouplesBalleTrouCombines();
         List<Ball> balles = trouverBalles(initialMap);
         List<Trou> trous = trouveTrous(initialMap);
@@ -370,7 +370,7 @@ public class MapAnalyzer {
     }
 
     public void initialiserToutesLesStrategiesDeDeplacement() {
-        CombinaisonBlock combinaison = new CombinaisonBlock("", new ArrayList(Arrays.asList("v,^,<,>".split(","))));
+        CombinaisonBlock combinaison = new CombinaisonBlockString("", new ArrayList(Arrays.asList("v,^,<,>".split(","))));
         strategies= combinaison.getToutesCombinaisonsString();
     }
 
@@ -384,8 +384,8 @@ public class MapAnalyzer {
         List<String> nouveauPlanResolu = null;
         ArrayList<String> copieOriginal = new ArrayList(rows);
         try {
-            List<CouplesBalleTrouCombines.CoupleBalleTrou> couples = combinaisoncouples.get(combinaisoncoupleNbr);
-            for (CouplesBalleTrouCombines.CoupleBalleTrou couple:couples) {
+            List<CoupleBalleTrou> couples = combinaisoncouples.get(combinaisoncoupleNbr);
+            for (CoupleBalleTrou couple:couples) {
                 Ball copieBalle = Ball.createNewInstance(couple.balle);
                 printChemin(rows,copieBalle,couple.trou);
                 nouveauPlanResolu = resoudreBalle(copieBalle, rows, couple.trou);
