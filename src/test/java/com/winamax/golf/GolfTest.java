@@ -228,16 +228,26 @@ public class GolfTest {
         Assertions.assertThrows(JeuIncompletException.class,()->{mapAnalyzer.definirTousLesCouplesBalleTrou(rows2);});
     }
     @Test
+    public void cinqBallescinqTrous_choisirCoupleBalleTrou_choisirCoupleBalleTrou() throws TrouNonTrouveException, JeuIncompletException {
+        List<String> rows = new ArrayList<>(List.of("12345....",
+                                                    "HHHHH....."));
+        List<List<CouplesBalleTrouCombines.CoupleBalleTrou>> coupleBalleTrouToutJeux = mapAnalyzer.definirTousLesCouplesBalleTrou(rows);
+
+        Assertions.assertEquals(6,coupleBalleTrouToutJeux.size());
+        Assertions.assertEquals(5,coupleBalleTrouToutJeux.get(0).size());
+        System.out.println(coupleBalleTrouToutJeux);
+        Assertions.assertTrue(coupleBalleTrouToutJeux.get(0).get(0).trou.x!=coupleBalleTrouToutJeux.get(1).get(0).trou.x);
+    }
+    @Test
     public void plusieursBallesPlusieursTrous_choisirCoupleBalleTrou_choisirCoupleBalleTrou() throws TrouNonTrouveException, JeuIncompletException {
         List<String> rows = new ArrayList<>(List.of("123......",
-                                                    "HHH......"));
+                "HHH......"));
         List<List<CouplesBalleTrouCombines.CoupleBalleTrou>> coupleBalleTrouToutJeux = mapAnalyzer.definirTousLesCouplesBalleTrou(rows);
 
         Assertions.assertEquals(6,coupleBalleTrouToutJeux.size());
         Assertions.assertEquals(3,coupleBalleTrouToutJeux.get(0).size());
         System.out.println(coupleBalleTrouToutJeux);
         Assertions.assertTrue(coupleBalleTrouToutJeux.get(0).get(0).trou.x!=coupleBalleTrouToutJeux.get(1).get(0).trou.x);
-
     }
     @Test
     public void combinaisonsDeStrategies2(){

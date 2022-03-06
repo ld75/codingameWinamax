@@ -387,6 +387,7 @@ public class MapAnalyzer {
             List<CouplesBalleTrouCombines.CoupleBalleTrou> couples = combinaisoncouples.get(combinaisoncoupleNbr);
             for (CouplesBalleTrouCombines.CoupleBalleTrou couple:couples) {
                 Ball copieBalle = Ball.createNewInstance(couple.balle);
+                printChemin(rows,copieBalle,couple.trou);
                 nouveauPlanResolu = resoudreBalle(copieBalle, rows, couple.trou);
                 printChemin(nouveauPlanResolu,copieBalle,couple.trou);
                 reinitialiserStrategies();
@@ -395,6 +396,7 @@ public class MapAnalyzer {
         } catch (ToutRefaireAvecNouveauxCouples e) {
             reinitialiserStrategies();
             toutRecommencerAvecDifferentsCouples();
+            printChemin(rows,combinaisoncouples.get(combinaisoncoupleNbr).get(0).balle,combinaisoncouples.get(combinaisoncoupleNbr).get(0).trou);
             return jouerChaqueCouple(copieOriginal);
         }
     }
