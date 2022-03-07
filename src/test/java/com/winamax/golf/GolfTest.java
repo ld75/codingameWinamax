@@ -548,6 +548,15 @@ public class GolfTest {
                                 "^..v..",
                                 "^..v..",
                                 "^.....");
+                        //ERREUR: //v...<<
+                        //ERREUR: //v>>>..
+                        //ERREUR: //v.....
+                        //ERREUR: //>>^>>^
+                        //ERREUR: //......
+                        //ERREUR: //>>>...
+
+
+
         List<String> res = mapAnalyzer.initialiserJeu( rows);
         mapAnalyzer.printChemin(res);
         Assertions.assertEquals(expect,res);

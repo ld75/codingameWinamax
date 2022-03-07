@@ -21,6 +21,9 @@ public class MapAnalyzer {
     private TrouRandomPicker trouRandomPicker = new TrouRandomPicker();
     private BallRandomPicker balleRandomPicker = new BallRandomPicker();
 
+    public void printrowsArrayCodinggame(List<String> rowsToPrint) {
+        rowsToPrint.forEach(System.out::println);
+    }
     public List<String> resoudreBalle(Ball balle, List<String> rows, Trou trou) throws ToutRefaireAvecNouveauCouple {
         Ball balleOriginale =Ball.createNewInstance(balle);
         List<String> resultRows = new ArrayList<>();
