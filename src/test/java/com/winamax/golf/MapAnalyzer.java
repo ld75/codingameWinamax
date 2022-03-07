@@ -25,7 +25,7 @@ public class MapAnalyzer {
         Ball balleOriginale =Ball.createNewInstance(balle);
         List<String> resultRows = new ArrayList<>();
             resultRows = testerBalleEtReecrirePlan(balle, rows,trou);
-        boolean hTrouve = isHTrouve(resultRows, trou);
+        boolean hTrouve = isHTrouve(balle, trou);
         System.out.println("htrouve: "+hTrouve+" pour balle "+ balleOriginale);
         if (hTrouve) return MarkBallEtTrouHasResolved(balleOriginale,trou, resultRows);
         throw new ToutRefaireAvecNouveauCouple();
@@ -44,20 +44,17 @@ public class MapAnalyzer {
         this.resolvedTrous.add(trou);
     }
 
-    public boolean isHTrouve(List<String> resultRows, Trou trou){
-        if (resultRows.size()==0) return false;
-        Integer y = trou.y;
-        Integer x = trou.x;
-            if(identifie(resultRows,x+1,y)== '<'
-                || identifie(resultRows,x-1,y)== '>'
-                || identifie(resultRows,x,y-1)== 'v'
-                || identifie(resultRows,x,y+1)== '^')
-                return true;
-        return false;
+    public boolean isHTrouve(Ball balle, Trou trou){
+            return (trou.y==balle.y && trou.x==balle.x);
     }
 
     public List<Trou> trouveTrous(List<String> resultRows) throws TrouNonTrouveException {
         char h = 'H';
+        return trouveCharEtTransformeEnTrous(resultRows, h);
+    }
+
+    public List<Trou> trouveZeros(List<String> resultRows) throws TrouNonTrouveException {
+        char h = '0';
         return trouveCharEtTransformeEnTrous(resultRows, h);
     }
     public List<Trou> trouveLacs(List<String> resultRows) throws TrouNonTrouveException {
@@ -97,6 +94,7 @@ public class MapAnalyzer {
                 BallEtMap ballExperimenteeEtMapConsequent = rechercheMemorisee(balleOriginal, rowsCopie, trou, strategieDirection);
                 balleExperimentee= ballExperimenteeEtMapConsequent.getBalle();
                 rowsCopie=ballExperimenteeEtMapConsequent.getRows();
+                rowsCopie = enleverZeros(rowsCopie);
             } catch (StrategiePerdante e) {
                 System.out.println("Strategie "+strategieNumber+" perdante POUR CETTE BALLE");
                 balleExperimentee= e.getBallWithInvalidPaths();
@@ -110,6 +108,7 @@ public class MapAnalyzer {
         if (cheminParcouruLePlusCourt.length()==0) throw new ToutRefaireAvecNouveauCouple();
         return cheminParcouruLePlusCourt;
     }
+
 
     private List<String> pickupFirstStrategie() {
         reinitialiserStrategies();
@@ -147,7 +146,7 @@ public class MapAnalyzer {
         printChemin(rows,balleOriginale,trou);
         Ball balle=Ball.createNewInstance(balleOriginale);
         int iddirections=0;
-        while (!isHTrouve(rows,trou)) {
+        while (!isHTrouve(balle,trou)) {
             if (balle.isTourneEnRond()){
                 if (balle.isATrouveChemin()) return new BallEtMap(balle,rows);
                 throw new StrategiePerdante(balle);
@@ -157,7 +156,7 @@ public class MapAnalyzer {
                 direction = strategieDirections.get(iddirections);
                 avanceBalleDansDirection(balle, rows, direction,trou);
                 //printChemin(rows, balle, trou);
-                if (isHTrouve(rows,trou)) {
+                if (isHTrouve(balle,trou)) {
                     balle.sauveParcourtEtReinitStack();
                     System.out.println("TROUVE!");
                     return new BallEtMap(balle,rows);
@@ -275,7 +274,7 @@ public class MapAnalyzer {
         return true;
     }
 
-    private boolean canMooveRight(Ball balle, List<String> rows, Trou trouCible) {
+    public boolean canMooveRight(Ball balle, List<String> rows, Trou trouCible) {
         int posx = balle.x;
         for (int pas = 0; pas <= balle.score-1; pas++) {
             posx++;
@@ -367,14 +366,26 @@ public class MapAnalyzer {
         return enleverLacs(resAvecLacs);
     }
 
+    private List<String> enleverZeros(List<String> rowsCopie) {
+        try {
+            List<Trou> zeros = trouveZeros(rowsCopie);
+            return removeObjetFromMap(rowsCopie, zeros);
+        } catch (TrouNonTrouveException e) {
+            return rowsCopie;
+        }
+    }
     public List<String> enleverLacs(List<String> resAvecLacs) {
         try {
             List<Trou> lacs = trouveLacs(resAvecLacs);
-            lacs.stream().forEach(l -> {removeThisTrouFromMap(resAvecLacs, l);});
-            return resAvecLacs;
+            return removeObjetFromMap(resAvecLacs, lacs);
         } catch (TrouNonTrouveException e) {
             return resAvecLacs;
         }
+    }
+
+    private List<String> removeObjetFromMap(List<String> resAvecLacs, List<Trou> lacs) {
+        lacs.stream().forEach(l -> {removeThisTrouFromMap(resAvecLacs, l);});
+        return resAvecLacs;
     }
 
     public void initialiserToutesLesStrategiesDeDeplacement() {

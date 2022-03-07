@@ -186,27 +186,6 @@ public class GolfTest {
         Assertions.assertEquals('d',mapAnalyzer.identifie(rows, 2, 1));
     }
     @Test
-    public void isHTrouve_Non() throws TrouNonTrouveException {
-        List<String> rows = List.of("..1",
-                                    "H>.");
-        Trou trou = mapAnalyzer.trouveTrous(rows).get(0);
-        Assertions.assertFalse(mapAnalyzer.isHTrouve(rows, trou));
-    }
-    @Test
-    public void isHTrouve_Oui1() throws TrouNonTrouveException {
-        List<String> rows = List.of("v..",
-                                    "H..");
-        Trou trou = mapAnalyzer.trouveTrous(rows).get(0);
-        Assertions.assertTrue(mapAnalyzer.isHTrouve(rows, trou));
-    }
-    @Test
-    public void isHTrouve_Oui2() throws TrouNonTrouveException {
-        List<String> rows = List.of("H..",
-                                    "^..");
-        Trou trou = mapAnalyzer.trouveTrous(rows).get(0);
-        Assertions.assertTrue(mapAnalyzer.isHTrouve(rows, trou));
-    }
-    @Test
     public void troisDimensionsRemplies() throws TrouNonTrouveException, ToutRefaireAvecNouveauCouple, StrategiePerdante {
         List<String> rows = new ArrayList<>(List.of("..H..",
                                                     ".....",
@@ -569,6 +548,40 @@ public class GolfTest {
                                 "^..v..",
                                 "^..v..",
                                 "^.....");
+        List<String> res = mapAnalyzer.initialiserJeu( rows);
+        mapAnalyzer.printChemin(res);
+        Assertions.assertEquals(expect,res);
+
+
+    }
+    @Test
+    public void canMoveRight()
+    {
+        for (int i=0; i<20; i++) {
+            boolean res = mapAnalyzer.canMooveRight(new Ball(4, 0, 0), new ArrayList(List.of("....H....")), new Trou(20, 20));
+            Assertions.assertFalse(res);
+        }
+    }
+    @Test
+    public void test5() throws TrouNonTrouveException, NonResoluException, JeuIncompletException {
+        List<String> rows = new ArrayList(List.of(
+                ".XXX.5X.",
+                "X.4.X..X",
+                "X4..X3.X",
+                "X...X.X.",
+                ".X.X.H.X",
+                "X.HX...X",
+                "X..X.H.X",
+                ".XH.XXX."));
+        List<String> expect = List.of(
+                    "v<<<<<..",
+                    "v.>>>>v.",
+                    "vvv<<<v.",
+                    "vvv...v.",
+                    "vvv.>.v.",
+                    "vv..^.v.",
+                    "v>>>^.<.",
+                    ">>......");
         List<String> res = mapAnalyzer.initialiserJeu( rows);
         mapAnalyzer.printChemin(res);
         Assertions.assertEquals(expect,res);
