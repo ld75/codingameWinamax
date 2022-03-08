@@ -48,6 +48,7 @@ public class MapAnalyzer {
     }
 
     public boolean isHTrouve(Ball balle, Trou trou){
+            if (balle.getAvantDerniereCase().equals("X")) return false;
             return (trou.y==balle.y && trou.x==balle.x);
     }
 
@@ -185,10 +186,11 @@ public class MapAnalyzer {
 
     public void avanceBalleDansDirection(Ball balle, List<String> rowsCopie, String direction, Trou trou) {
         for (int scorestant=balle.score; scorestant>0; scorestant--) {
+                balle.ajouteHistorique(identifie(rowsCopie,balle.x,balle.y));
              changeCharAt(rowsCopie, balle.x, balle.y, direction);
-             changeBallPosition(balle, direction, rowsCopie, trou);
-             balle.ajouteChemin(direction);
-         }
+            changeBallPosition(balle, direction, rowsCopie, trou);
+            balle.ajouteChemin(direction);
+        }
         balle.decrementeScore();
     }
 

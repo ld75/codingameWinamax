@@ -11,6 +11,7 @@ public class Ball {
     private List<String> stackDirectionsFound = new ArrayList<>();
     private LinkedList<Integer[]> blocageQueue = new LinkedList<>();
     private List<String> invalidPaths = new ArrayList<>();
+    private LinkedList<String> dernierPas = new LimitedQueue(2);
 
     public Ball(int scoreBalle, int x, int y) {
         this.score=scoreBalle;
@@ -167,5 +168,17 @@ public class Ball {
                 "x=" + x +
                 ", y=" + y +
                 '}';
+    }
+
+    public String getAvantDerniereCase() {
+        try {
+            return this.dernierPas.getLast();
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    public void ajouteHistorique(char identifie) {
+        this.dernierPas.add(Character.toString(identifie));
     }
 }

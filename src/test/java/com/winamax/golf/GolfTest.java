@@ -524,6 +524,22 @@ public class GolfTest {
         Assertions.assertThrows(NonResoluException.class,()->{mapAnalizerStub.jouerChaqueCouple(new ArrayList<>());});
         Assertions.assertEquals(4,mapAnalizerStub.getCouplesJoues());
     }
+
+    @Test
+    public void balleAvance_connaitAvantdernierCoup(){
+        Ball balle = new Ball(4, 0, 0);
+        Assertions.assertEquals(balle.getAvantDerniereCase(),"");
+        mapAnalyzer.avanceBalleDansDirection(balle,new ArrayList(List.of("ABCDEFG")),">",new Trou(0,6));
+        Assertions.assertEquals("D",balle.getAvantDerniereCase());
+    }
+@Test
+public void vientDunLac_isHTrouve_false(){
+    Ball balle= new Ball(0,2,2);
+    balle.ajouteHistorique('.');
+    Assertions.assertTrue(mapAnalyzer.isHTrouve(balle,new Trou(2,2)));
+    balle.ajouteHistorique('X');
+    Assertions.assertFalse(mapAnalyzer.isHTrouve(balle,new Trou(2,2)));
+   }
     @Test
     public void test4() throws TrouNonTrouveException, NonResoluException, JeuIncompletException {
         //ligne: 3..H.2
