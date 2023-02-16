@@ -12,6 +12,7 @@ public class Ball {
     private LinkedList<Integer[]> blocageQueue = new LinkedList<>();
     private List<String> invalidPaths = new ArrayList<>();
     private LinkedList<String> dernierPas = new LimitedQueue(2);
+    private List<Trou> listeLacs = new ArrayList<>();
 
     public Ball(int scoreBalle, int x, int y) {
         this.score=scoreBalle;
@@ -179,6 +180,8 @@ public class Ball {
     }
 
     public void ajouteHistorique(char identifie) {
+        if (identifie=='X') listeLacs.add(new Trou(this.x,this.y));
+        if (listeLacs.contains(new Trou(this.x,this.y))) identifie='X';
         this.dernierPas.add(Character.toString(identifie));
     }
 }
