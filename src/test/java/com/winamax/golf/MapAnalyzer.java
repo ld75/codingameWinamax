@@ -15,19 +15,17 @@ public class MapAnalyzer {
     public List<Ball> resolvedBall= new ArrayList<>();
     private List<CoupleBalleTrou> couplesInvalide = new ArrayList<>();
 
-    private ArrayList initialMap;
+    protected List<String> initialMap;
     List<Ball> balles;
     List<Trou> trous;
-    private TrouRandomPicker trouRandomPicker = new TrouRandomPicker();
-    private BallRandomPicker balleRandomPicker = new BallRandomPicker();
-    private List<List<CoupleBalleTrou>> allCombinaisonsCouples;
+    protected List<List<CoupleBalleTrou>> allCombinaisonsCouples;
     private int idxCouple= 0;
     private int idxcombinaisonCouples=0;
 
     public void printrowsArrayCodinggame(List<String> rowsToPrint) {
         rowsToPrint.forEach(System.out::println);
     }
-    public List<String> resoudreBalle(Ball balle, List<String> rowsAvantEssai, Trou trou) throws ToutRefaireAvecNouveauCouple {
+    public List<String> resoudreBalle(Ball balle, List<String> rowsAvantEssai, Trou trou) throws ToutRefaireAvecNelleCombinaisonCouples {
         ArrayList rowAtravailler = new ArrayList(rowsAvantEssai);
         Ball balleOriginale =Ball.createNewInstance(balle);
         List<String> resultRows = new ArrayList<>();
@@ -36,7 +34,7 @@ public class MapAnalyzer {
         System.out.println("htrouve: "+hTrouve+" pour balle "+ balleOriginale+ "trou "+ trou);
         printChemin(resultRows,balleOriginale,trou);
         if (hTrouve) return MarkBallEtTrouHasResolved(balleOriginale,trou, resultRows);
-        throw new ToutRefaireAvecNouveauCouple();
+        throw new ToutRefaireAvecNelleCombinaisonCouples();
     }
 
     private List<String> MarkBallEtTrouHasResolved(Ball balle,Trou trou, List<String> resultRows) {
@@ -53,9 +51,7 @@ public class MapAnalyzer {
     }
 
     public boolean isHTrouve(Ball balle, Trou trou){
-        boolean isOnLacJusteAvant = balle.getAvantDerniereCase().equals("X");
-        if (isOnLacJusteAvant) return false;
-            return (trou.y==balle.y && trou.x==balle.x);
+            return (trou.getY()==balle.getY() && trou.getX()==balle.getX());
     }
 
     public List<Trou> trouveTrous(List<String> resultRows) throws TrouNonTrouveException {
@@ -76,7 +72,10 @@ public class MapAnalyzer {
         for(int y = 0; y< resultRows.size(); y++){
             for (int x = 0; x< resultRows.get(y).length(); x++)
             {
-                if (resultRows.get(y).charAt(x)== h) trous.add(new Trou(new Integer[]{x,y}));
+                char charAtPosition = resultRows.get(y).charAt(x);
+                if (charAtPosition == h) {
+                    trous.add(new Trou(new Integer[]{x,y}));
+                }
             }
         }
         if (trous.size()==0) throw new TrouNonTrouveException();
@@ -84,42 +83,34 @@ public class MapAnalyzer {
     }
 
     private List<String> removeThisTrouFromMap(List<String> resultRows, Trou trou) {
-        resultRows.set(trou.y,changeCharAt(resultRows.get(trou.y),trou.x,"."));
+        resultRows.set(trou.getY(),changeCharAt(resultRows.get(trou.getY()),trou.getX(),"."));
         return resultRows;
     }
 
-    List<String> testerBalleEtReecrirePlan(Ball balle, List<String> rows, Trou trou) throws ToutRefaireAvecNouveauCouple {
+    List<String> testerBalleEtReecrirePlan(Ball balle, List<String> rows, Trou trou) throws ToutRefaireAvecNelleCombinaisonCouples {
         String chemin ="";
         chemin = rechercheParStrategies(balle, rows, trou);
-        ecrireAuPropreLeChemin(balle, rows, chemin);
+        balle.ecrireAuPropreLeChemin(rows, chemin);
         return rows;
     }
 
-    private String rechercheParStrategies(Ball balleOriginal, List<String> rowsOriginal, Trou trou) throws ToutRefaireAvecNouveauCouple {
+    private String rechercheParStrategies(Ball balleOriginal, List<String> rowsOriginal, Trou trou) throws ToutRefaireAvecNelleCombinaisonCouples {
         List<String> strategieDirection =pickupFirstStrategie();
         Ball balleExperimentee=null;
         List<String> rowsCopie = new ArrayList(rowsOriginal);
-        while(!isToutesLesStrategiesOntJoue()) {
-            try {
+        try {
+                System.out.println("strategie en cours : "+strategieDirection);
                 BallEtMap ballExperimenteeEtMapConsequent = rechercheMemorisee(balleOriginal, rowsCopie, trou, strategieDirection);
+                printChemin(rowsCopie);
                 balleExperimentee= ballExperimenteeEtMapConsequent.getBalle();
-                rowsCopie=ballExperimenteeEtMapConsequent.getRows();
-                rowsCopie = enleverZeros(rowsCopie);
             } catch (StrategiePerdante e) {
                 //System.out.println("Strategie "+strategieNumber+" perdante POUR CETTE BALLE");
                 balleExperimentee= e.getBallWithInvalidPaths();
             }
-                try {strategieDirection = pickupNextStrategie();}catch(IndexOutOfBoundsException e){break;}
-                balleOriginal = Ball.copieExperience(balleExperimentee,balleOriginal);
-                //System.out.println("NOUVELLE STRATEGIE NUMERO "+strategieNumber+" POUR CETTE BALLE :"+ strategieDirection);
-        }
-
-        String cheminParcouruLePlusCourt = balleExperimentee.getCheminParcouruLePlusCourt();
-        if (cheminParcouruLePlusCourt.length()==0) throw new ToutRefaireAvecNouveauCouple();
-        return cheminParcouruLePlusCourt;
+            String cheminParcouruLePlusCourt = balleExperimentee.getCheminParcouruLePlusCourt();
+            if (cheminParcouruLePlusCourt.length()==0) throw new ToutRefaireAvecNelleCombinaisonCouples();
+            return cheminParcouruLePlusCourt;
     }
-
-
     private List<String> pickupFirstStrategie() {
         reinitialiserStrategies();
         List<String> ret = Arrays.asList(strategies.get(strategieNumber).split(","));
@@ -139,63 +130,94 @@ public class MapAnalyzer {
         return strategieNumber >= strategies.size();
     }
 
-    private void ecrireAuPropreLeChemin(Ball balle, List<String> rows, String chemin) {
-        for (int i = 0; i< chemin.length(); i++){
-            String direction= String.valueOf(chemin.charAt(i));
-            ecrireLeChemin(balle, rows, direction);
-            changeBallPosition(balle,direction, rows, new Trou());
-        }
-    }
 
-    private void ecrireLeChemin(Ball balle, List<String> rows, String direction) {
-        rows.set(balle.y, changeCharAt( rows.get(balle.y), balle.x, direction));
-    }
-
-    public BallEtMap rechercheMemorisee(Ball balleOriginale, List<String> rows, Trou trou, List<String> strategieDirections) throws StrategiePerdante {
+    public BallEtMap rechercheMemorisee(Ball balleOriginale, List<String> rows, Trou trou, List<String> strategieDirections) throws StrategiePerdante, ToutRefaireAvecNelleCombinaisonCouples {
         //System.out.println("NOUVELLE RECHERCHE MEMORISEE "+balleOriginale + " Trou: "+trou);
         //printChemin(rows,balleOriginale,trou);
         Ball balle=Ball.createNewInstance(balleOriginale);
-        int iddirections=0;
+        balle.initIDDirectionForScores(strategieDirections);
         while (!isHTrouve(balle,trou)) {
-            if (balle.isTourneEnRond()){
-                if (balle.isATrouveChemin()) return new BallEtMap(balle,rows);
-                throw new StrategiePerdante(balle);
+            System.out.println("stack: " + balle.stackDirection);
+            if (isBallAToutExplorePourCeScore(strategieDirections, balle)){
+              if (balle.score==balle.scoreInitial) throw new ToutRefaireAvecNelleCombinaisonCouples();
+              else {
+                  retourArriere(rows,balle);
+              }
             }
-            String direction =strategieDirections.get(iddirections);
-            while (isBallCanMoove(balle, direction, rows,trou)) {
-                direction = strategieDirections.get(iddirections);
+            if (balle.isToutesLesDirectonsOntJouePourCeScore()) throw new ToutRefaireAvecNelleCombinaisonCouples();
+            String direction =balle.getDirectionForScore(strategieDirections);
+            while(!isBallAToutExplorePourCeScore(strategieDirections, balle)){
+                if (!isBallCanMooveInDir(balle, direction, rows,trou)){
+                    balle.incrementIdDirectionForScore();
+                    if (balle.isToutesLesDirectonsOntJouePourCeScore()) break;
+                    direction =balle.getDirectionForScore(strategieDirections);
+                    continue;
+                }
                 avanceBalleDansDirection(balle, rows, direction,trou);
                 printChemin(rows, balle, trou);
+                if (isTombeDansLac(balle)) break;
                 if (isHTrouve(balle,trou)) {
                     balle.sauveParcourtEtReinitStack();
                     System.out.println("TROUVE!");
                     return new BallEtMap(balle,rows);
                 }
-                iddirections = 0;
-                direction = strategieDirections.get(iddirections);
+                if (isBallAToutExplorePourCeScore(strategieDirections, balle) ) break;
+                direction =balle.getDirectionForScore(strategieDirections);
             }
-            iddirections++;
-            if (balle.score==0 || isToutesLesDirectonsOntJoue(strategieDirections, iddirections)) {
-                String lastDirection = balle.getLastDirection();
-                iddirections = sauteIdDirectionPrecedent(strategieDirections, lastDirection);
-                balle.ajouteStackDeblocage(rows);
-                if (isNaPasEchoue(balle, lastDirection)) {
+            if (isTombeDansLac(balle)) retourArriere(rows,balle);
+            else if (balle.isToutesLesDirectonsOntJouePourCeScore()) {
+                if (balle.isATrouveChemin()) {
                     return new BallEtMap(balle,rows);
                 }
-                else rebrousseChemin(balle, getOppose(lastDirection));
-                //printChemin(rows,balle,trou);
+                else {
+                    retourArriere(rows, balle);
+                }
+                printChemin(rows,balle,trou);
             }
-            if (isAfaitCetteSerieDeDirections(strategieDirections, iddirections)) iddirections=0;
+            /*String lastDirection = balle.getLastDirection(balle);
+            iddirections = sauteIdDirectionPrecedent(strategieDirections, lastDirection);
+            if (isAfaitCetteSerieDeDirections(strategieDirections, iddirections)) iddirections=0;*/
         }
         return new BallEtMap(balle,rows);
     }
 
+    private void retourArriere(List<String> rows, Ball balle) throws StrategiePerdante {
+        String lastDirection = balle.getLastDirection(balle);
+        /*if (balle.isToutesLesDirectonsOntJouePourCeScore()){
+            balle.invaliderLeSousChemin(balle, rows);
+        }*/
+        balle.resetIdDirectionForScore();
+        rebrousseChemin(balle, getOppose(lastDirection, balle),rows);
+        balle.incrementIdDirectionForScore();
+        System.out.println("aaaaaaaaaaaaaaaaaaaaa");
+        printChemin(rows,balle);
+        System.out.println("bbbbbbbbbbbbbbbbbb");
+    }
+
+    private void printChemin(List<String> rows, Ball balle) {
+        ArrayList rowsToPrint = new ArrayList(Arrays.asList(rows.toArray()));
+        changeCharAt(rowsToPrint,balle.getX(),balle.getY(),"B");
+        printrowsArray(rowsToPrint);
+    }
+
+    private boolean isBallAToutExplorePourCeScore(List<String> strategieDirections, Ball balle) {
+        return balle.getIdDirectionForScore() >= strategieDirections.size();
+    }
+
+    private boolean isTombeDansLac(Ball balle) {
+        boolean isTombeDansLac = identifie(this.initialMap,balle.getX(),balle.getY())=='X';
+        if (isTombeDansLac) return true;
+        return false;
+    }
+
     public void avanceBalleDansDirection(Ball balle, List<String> rowsCopie, String direction, Trou trou) {
         for (int scorestant=balle.score; scorestant>0; scorestant--) {
-                balle.ajouteHistorique(identifie(rowsCopie,balle.x,balle.y));
-             changeCharAt(rowsCopie, balle.x, balle.y, direction);
-            changeBallPosition(balle, direction, rowsCopie, trou);
-            balle.ajouteChemin(direction);
+            char caseb = identifie(rowsCopie, balle.getX(), balle.getY());
+            balle.siLacMarqueLac(caseb);
+             changeCharAt(rowsCopie, balle.getX(), balle.getY(), direction);
+            Case casedirection = new Case(Character.toString(caseb), balle.getX(), balle.getY(), direction);
+            balle.ajouteChemin(casedirection);
+            balle.changeBallPosition(direction);
         }
         balle.decrementeScore();
     }
@@ -210,13 +232,6 @@ public class MapAnalyzer {
         return iddirections;
     }
 
-    private boolean isNaPasEchoue(Ball balle, String lastDirection) throws StrategiePerdante {
-        if (lastDirection.equals("0")) {
-            if (balle.isATrouveChemin()) return true;
-            throw new StrategiePerdante(balle);
-        }
-        return false;
-    }
 
     private boolean isToutesLesDirectonsOntJoue(List<String> strategieDirections, int iddirections) {
         return iddirections > strategieDirections.size() - 1;
@@ -226,33 +241,29 @@ public class MapAnalyzer {
         rows.set(y,changeCharAt(rows.get(y),x,marque));
     }
 
-    private String getOppose(String direction) {
+    private String getOppose(String direction, Ball balle) throws StrategiePerdante {
         if (direction.equals(">")) return "<";
         if (direction.equals("v")) return "^";
         if (direction.equals("<")) return ">";
-        else return "v";
+        if (direction.equals("^")) return "v";
+        else throw new StrategiePerdante(balle);
     }
 
-    public void changeBallPosition(Ball balle, String direction, List<String> rows, Trou trouCible) {
-        if (direction.equals(">")) balle.x++;;
-        if (direction.equals("<")) balle.x--;
-        if (direction.equals("v")) balle.y++;
-        if (direction.equals("^")) balle.y--;
-    }
 
-    public void rebrousseChemin(Ball balle, String direction){
-        balle.invaliderLeCheminComplet();
+
+    public void rebrousseChemin(Ball balle, String direction, List<String> rows){
         int previousScore = balle.score+1;
         for (int step=0; step<previousScore;step++) {
-            balle.removeLastStep();
-            if (direction.equals(">")) balle.x++;
-            if (direction.equals("<")) balle.x--;
-            if (direction.equals("v")) balle.y++;
-            if (direction.equals("^")) balle.y--;
+            balle.removeLastStep(rows);
+            printChemin(rows);
+            if (direction.equals(">")) balle.incrementX();
+            if (direction.equals("<")) balle.decrementX();
+            if (direction.equals("v")) balle.incrementY();
+            if (direction.equals("^")) balle.decrementY();
         }
         balle.incrementeScore();
     }
-    public boolean isBallCanMoove(Ball balle, String direction, List<String> rows, Trou trouCible) {
+    public boolean isBallCanMooveInDir(Ball balle, String direction, List<String> rows, Trou trouCible) {
         if (balle.score==0) return false;
         if (direction.equals("v")) return canMooveDown(balle, rows,trouCible);
         if(direction.equals("<")) return canMooveLeft(balle,rows,trouCible);
@@ -262,11 +273,11 @@ public class MapAnalyzer {
     }
 
     private boolean canMooveUp(Ball balle, List<String> rows, Trou trouCible) {
-        int posy = balle.y;
+        int posy = balle.getY();
         for (int pas = 0; pas <= balle.score-1; pas++) {
             posy--;
             boolean isDansPlan = posy > -1;
-            boolean validDest = isValidDest(balle.x, posy, rows, trouCible);
+            boolean validDest = isValidDest(balle.getX(), posy, rows, trouCible);
             if (!(isDansPlan && validDest)) return false;
         }
         return true;
@@ -275,22 +286,22 @@ public class MapAnalyzer {
 
 
     private boolean canMooveLeft(Ball balle, List<String> rows, Trou trouCible) {
-        int posx = balle.x;
+        int posx = balle.getX();
         for (int pas = 0; pas <= balle.score-1; pas++) {
             posx--;
             boolean isDansPlan = posx > -1;
-            boolean validDest = isValidDest(posx, balle.y, rows, trouCible);
+            boolean validDest = isValidDest(posx, balle.getY(), rows, trouCible);
             if (!(isDansPlan && validDest)) return false;
         }
         return true;
     }
 
     public boolean canMooveRight(Ball balle, List<String> rows, Trou trouCible) {
-        int posx = balle.x;
+        int posx = balle.getX();
         for (int pas = 0; pas <= balle.score-1; pas++) {
             posx++;
             boolean isDansPlan = posx < rows.get(0).length();
-            boolean validDest = isValidDest(posx, balle.y, rows, trouCible);
+            boolean validDest = isValidDest(posx, balle.getY(), rows, trouCible);
             if (!(isDansPlan && validDest)) return false;
         }
         return true;
@@ -298,11 +309,11 @@ public class MapAnalyzer {
 
 
     private boolean canMooveDown(Ball balle, List<String> rows, Trou trouCible) {
-        int posy = balle.y;
+        int posy = balle.getY();
         for (int pas = 0; pas <= balle.score-1; pas++) {
             posy++;
             boolean isDansPlan = posy < rows.size();
-            boolean validDest = isValidDest(balle.x, posy, rows, trouCible);
+            boolean validDest = isValidDest(balle.getX(), posy, rows, trouCible);
             if (!(isDansPlan && validDest)) return false;
         }
         return true;
@@ -310,12 +321,13 @@ public class MapAnalyzer {
 
     private boolean isValidDest(int x, int y, List<String> rows, Trou trouCible) {
         if (isResolvedTrouInThisPosition(x,y)) return false;
-        return identifie(rows, x, y) == '.' || identifie(rows, x, y) == 'X' || (identifie(rows, x, y) == 'H' && trouCible.x==x && trouCible.y==y);
+        char identifie = identifie(rows, x, y);
+        return identifie == '.' || identifie == 'X' || (identifie == 'H' && trouCible.getX()==x && trouCible.getY()==y);
 
     }
 
     private boolean isResolvedTrouInThisPosition(int x,int y) {
-        return resolvedTrous.stream().filter(trou -> trou.x==x&&trou.y==y).collect(Collectors.toList()).size()>0;
+        return resolvedTrous.stream().filter(trou -> trou.getX()==x&&trou.getY()==y).collect(Collectors.toList()).size()>0;
     }
 
     private int getWith(String dimensions) {
@@ -336,7 +348,7 @@ public class MapAnalyzer {
         return balles;
     }
 
-    public char identifie(List<String> rows, int x, int y) {
+    public static char identifie(List<String> rows, int x, int y) {
         if (x<0 || y<0 ||y>=rows.size() ||x>=rows.get(0).length()) return 'E';
         return rows.get(y).charAt(x);
         /*return rows.get(0)y > 0 && x > 0 && resultRows.get(y).charAt(x - 1) == droite;
@@ -372,10 +384,16 @@ public class MapAnalyzer {
         reinitialiserStrategies();
         initialiserToutesLesStrategiesDeDeplacement();
         definirTousBallesEtTrous(rows);
-        allCombinaisonsCouples =genererAllCombinaisons(balles,trous);
+        initCombinaisonsCouples();
         if (initialMap==null) initialMap= new ArrayList(Arrays.asList(rows.toArray()));
         List<String> resAvecLacs = jouerChaqueCouple(rows);
         return enleverLacs(resAvecLacs);
+    }
+
+    protected void initCombinaisonsCouples() {
+        idxCouple=0;
+        idxcombinaisonCouples=0;
+        allCombinaisonsCouples =genererAllCombinaisons(balles,trous);
     }
 
     private List<String> enleverZeros(List<String> rowsCopie) {
@@ -402,15 +420,34 @@ public class MapAnalyzer {
 
     public void initialiserToutesLesStrategiesDeDeplacement() {
         CombinaisonBlock combinaison = new CombinaisonBlockString("", new ArrayList(Arrays.asList("v,^,<,>".split(","))));
-        strategies= combinaison.getToutesCombinaisonsString();
+        //strategies= combinaison.getToutesCombinaisonsString();
+        strategies= List.of(combinaison.getToutesCombinaisonsString().get(0).toString());
         System.out.println(strategies);
     }
 
     private void toutRecommencerAvecNouvellePremiereBalle() throws NonResoluException {
         resolvedTrous.clear();
         resolvedBall.clear();
-        if(couplesInvalide.size()>balles.size()*trous.size()) throw new NonResoluException();
+        idxcombinaisonCouples++;
+        while (isCoupleInvalidesInCombinaisonCouples()) idxcombinaisonCouples++;
+        //System.out.println("idxcombicouples"+idxcombinaisonCouples);
+        idxCouple=0;
+        if(idxcombinaisonCouples>allCombinaisonsCouples.size()) throw new NonResoluException();
     }
+
+    private boolean isCoupleInvalidesInCombinaisonCouples() throws NonResoluException {
+        if(idxcombinaisonCouples>allCombinaisonsCouples.size()-1){
+            System.out.println(idxcombinaisonCouples+" " +allCombinaisonsCouples.size());
+            throw new NonResoluException();
+        }
+        List<CoupleBalleTrou> coupleBalleTrous = allCombinaisonsCouples.get(idxcombinaisonCouples);
+        for (CoupleBalleTrou couple:coupleBalleTrous)
+        {
+            if (couplesInvalide.contains(couple)) return true;
+        }
+        return false;
+    }
+
     public List<String> jouerChaqueCouple(List<String> rowsAvantEssai) throws NonResoluException {
         List<String> nouveauPlanResolu = null;
         ArrayList<String> copieOriginal = new ArrayList(rowsAvantEssai);
@@ -419,23 +456,18 @@ public class MapAnalyzer {
             try {
                 while (resolvedBall.size() < balles.size()) {
                     couple = getNextCoupleBalleTrou();
+                    if (couplesInvalide.contains(couple)) continue;
                     Ball copieBalle = Ball.createNewInstance(couple.balle);
-                    System.out.println("CHANGER COUPLE " + copieBalle + " " + couple.trou);
+                    System.out.println("CHANGER COUPLE " + copieBalle + " " + couple.trou +" couples invalides: " + couplesInvalide.size()+" idCombiCouple: "+idxcombinaisonCouples+"/"+allCombinaisonsCouples.size() );
                     nouveauPlanResolu = resoudreBalle(copieBalle, rowsAvantEssai, couple.trou);
                     reinitialiserStrategies();
                     rowsAvantEssai = nouveauPlanResolu;
                 }
                 return nouveauPlanResolu;
-            } catch (ToutRefaireAvecNouveauCouple e) {
-                System.out.println("COUPLE KO "+ couple);
-                printChemin(rowsAvantEssai, couple.balle, couple.trou);
-                couplesInvalide.add(couple);
-                reinitialiserStrategies();
             } catch (ToutRefaireAvecNelleCombinaisonCouples e) {
-                System.out.println("COUPLES KO "+couple);
+                System.out.println("COMBI KO "+couple);
                  printChemin(rowsAvantEssai, couple.balle, couple.trou);
                 toutRecommencerAvecNouvellePremiereBalle();
-                couplesInvalide.clear();
                 reinitialiserStrategies();
                 rowsAvantEssai = copieOriginal;
             }
@@ -443,13 +475,15 @@ public class MapAnalyzer {
     }
 
     private CoupleBalleTrou getNextCoupleBalleTrou() throws ToutRefaireAvecNelleCombinaisonCouples, NonResoluException {
+        if(idxcombinaisonCouples>allCombinaisonsCouples.size()-1) throw new NonResoluException();
+        if (idxCouple> allCombinaisonsCouples.get(idxcombinaisonCouples).size()-1) throw new ToutRefaireAvecNelleCombinaisonCouples();
         CoupleBalleTrou couple =  allCombinaisonsCouples.get(idxcombinaisonCouples).get(idxCouple);
         idxCouple++;
         return couple;
     }
 
 
-    private void reinitialiserStrategies() {
+    protected void reinitialiserStrategies() {
         strategieNumber=0;
     }
 
@@ -464,46 +498,37 @@ public class MapAnalyzer {
 
     public void printChemin(List<String> rows, Ball balle, Trou trou) {
         ArrayList rowsToPrint = new ArrayList(Arrays.asList(rows.toArray()));
-        System.out.println("stack de la balle "+ balle.imprimeStak());
-        changeCharAt(rowsToPrint,trou.x,trou.y,"T");
-        changeCharAt(rowsToPrint,balle.x,balle.y,"B");
+        //System.out.println("stack de la balle "+ balle.imprimeStak());
+        changeCharAt(rowsToPrint,trou.getX(),trou.getY(),"T");
+        changeCharAt(rowsToPrint,balle.getX(),balle.getY(),"B");
         printrowsArray(rowsToPrint);
     }
-    public void printChemin(List<String> rows) {
+    public static void printChemin(List<String> rows) {
         ArrayList rowsToPrint = new ArrayList(Arrays.asList(rows.toArray()));
         printrowsArray(rowsToPrint);
     }
 
-    private void printrowsArray(ArrayList rowsToPrint) {
+    private static void printrowsArray(ArrayList rowsToPrint) {
         System.out.println("-----");
         rowsToPrint.forEach(System.out::println);
         System.out.println("-----");
     }
 
-
-    public int power(int deux) {
-        int res=deux;
-        while(deux>1)
-        {
-            if (res>=771881146) res=771881146;
-            else res =(deux - 1)*res;
-            deux--;
-        }
-        return res;
-    }
     public List<List<CoupleBalleTrou>> genererAllCombinaisons(List<Ball> balles, List<Trou> trous){
+        System.out.println(trous);
         List<List<CoupleBalleTrou>> allCombis = new ArrayList<>();
         List<String> listeBalles = IntStream.range(0, balles.size()).boxed().map(i->Integer.toString(i)).collect(Collectors.toList());
         CombinaisonBlock combinaisons = new CombinaisonBlockString("",listeBalles);
         List<String> listeCombiTrous = combinaisons.getToutesCombinaisonsString();
-        List<CoupleBalleTrou> coupleBalleTrous=new ArrayList<>();
         listeCombiTrous.forEach(sequenceTrous->{
+            List<CoupleBalleTrou> coupleBalleTrous=new ArrayList<>();
             List<Integer> uneCombinaisonTrous = Arrays.stream(sequenceTrous.split(",")).map(s -> Integer.parseInt(s)).collect(Collectors.toList());
             for (int i=0; i<balles.size(); i++){
                 coupleBalleTrous.add(new CoupleBalleTrou(balles.get(i),trous.get(uneCombinaisonTrous.get(i))));
             }
             allCombis.add(coupleBalleTrous);
         });
+        System.out.println("couples: "+ allCombis);
         return allCombis;
     }
 }

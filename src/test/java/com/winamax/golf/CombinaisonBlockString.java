@@ -38,7 +38,12 @@ public class CombinaisonBlockString extends CombinaisonBlock<String,String,Strin
 
     @Override
     public List<String> getToutesCombinaisonsString() {
-            return this.getToutesCombinaisons().stream().map(c->new String(((CombinaisonBlockString)c).prefix)).collect(Collectors.toList());
+            return this.getToutesCombinaisons().stream().map(c->{
+                String prefix = ((CombinaisonBlockString) c).prefix;
+                String reste = ((CombinaisonBlockString) c).reste.get(0);
+                if ("".equals(prefix))return reste;
+                return prefix.concat(",").concat(reste);
+            }).collect(Collectors.toList());
         }
 
 

@@ -1,45 +1,49 @@
 package com.winamax.golf;
 
 import java.util.*;
+import java.util.stream.IntStream;
+
+import static com.winamax.golf.MapAnalyzer.changeCharAt;
 
 public class Ball {
+    public Position position = new Position();
     public int scoreDecrementalDessai;
     public int score;
-    public int x;
-    public int y;
-    private Stack<String> stackDirection= new Stack();
+    public Stack<Case> stackDirection= new Stack();
+    public int scoreInitial;
     private List<String> stackDirectionsFound = new ArrayList<>();
     private LinkedList<Integer[]> blocageQueue = new LinkedList<>();
     private List<String> invalidPaths = new ArrayList<>();
-    private LinkedList<String> dernierPas = new LimitedQueue(2);
+    private List<Case> dernierPas = new ArrayList();
     private List<Trou> listeLacs = new ArrayList<>();
+    private List<Integer> idDirectionForScore = new ArrayList<>();
+    private int limiteStrategieDirection=0;
 
     public Ball(int scoreBalle, int x, int y) {
         this.score=scoreBalle;
+        this.scoreInitial=scoreBalle;
         this.scoreDecrementalDessai =scoreBalle;
-        this.x= x;
-        this.y=y;
+        this.position=new Position(x,y);
     }
 
     public Ball() {
 
     }
 
-    public String removeLastStep() {
-        try {
-            String prev = this.stackDirection.pop();
-            return prev;
-        } catch (Exception e) {
-            return "0";
-        }
+    public void removeLastStep(List<String> rows) {
+        System.out.println("ballstack: " + this.stackDirection);
+        Case casepoint = this.stackDirection.pop();
+        ecrireLeChemin(casepoint.position, rows, casepoint.casepoint);
+//        Case avantderniercase = this.stackDirection.lastElement();
+//        ecrireLeChemin(avantderniercase.position, rows, avantderniercase.casepoint);
     }
-    public String getLastDirection() {
+    public String getLastDirection(Ball balle) throws StrategiePerdante {
         try {
-            String prev = this.stackDirection.peek();
-            return prev;
+            Case prev = this.stackDirection.peek();
+            return prev.direction;
 
         } catch (Exception e) {
-            return "0";
+            throw new StrategiePerdante(balle);
         }
     }
 
@@ -54,10 +58,10 @@ public class Ball {
     }
 
     private String stackToString() {
-        return stackDirection.stream().reduce((first, second) -> first.concat(second)).get();
+        return stackDirection.stream().map(Case::getDirection).reduce((first, second) -> first.concat(second)).get();
     }
 
-    public void ajouteChemin(String direction) {
+    public void ajouteChemin(Case direction) {
         this.stackDirection.push(direction);
     }
 
@@ -78,33 +82,17 @@ public class Ball {
         this.stackDirection=new Stack<>();
     }
 
-    public void decrementeScoreDessai() {
-        scoreDecrementalDessai--;
-        score=scoreDecrementalDessai;
-    }
 
-    public void ajouteStackDeblocage(List<String> rowsCopie) {
-        MapAnalyzer.changeCharAt(rowsCopie, x, y, "O");
-        addBlocage(rowsCopie,x,y);
-    }
 
-    private void addBlocage(List<String> rowsCopie,int x, int y) {
-        if (blocageQueue.size()>2) deleteFirstBlocage(rowsCopie);
-        blocageQueue.add(new Integer[]{x,y});
-    }
-
-    private void deleteFirstBlocage(List<String> rowsCopie) {
-        Integer[] oldBlocage = blocageQueue.removeFirst();
-        MapAnalyzer.changeCharAt(rowsCopie, oldBlocage[0], oldBlocage[1], ".");
-    }
 
     public static Ball createNewInstance(Ball ball) {
         Ball ret = new Ball();
-        ret.x=ball.x;
-        ret.y=ball.y;
+        ret.setX(ball.getX());
+        ret.setY(ball.getY());
         ret.score=ball.score;
+        ret.scoreInitial=ball.scoreInitial;
         ret.scoreDecrementalDessai=ball.scoreDecrementalDessai;
-        ret.stackDirection=(Stack<String>) ball.stackDirection.clone();
+        ret.stackDirection=(Stack<Case>) ball.stackDirection.clone();
         ret.stackDirectionsFound= new ArrayList(Arrays.asList(ball.stackDirectionsFound.toArray()));
         ret.invalidPaths= new ArrayList(Arrays.asList(ball.invalidPaths.toArray()));
         return ret;
@@ -126,38 +114,27 @@ public class Ball {
         return stackDirectionsFound.size()>0;
     }
 
-    public void invaliderLeCheminComplet() {
+    public void invaliderLeSousChemin(Ball balle, List<String> rows) {
+        if (balle.score>1) {
+            for (int i = dernierPas.size() ; i>score; i--){
+                Case casepoint = dernierPas.get(i);
+                ecrireLeChemin(casepoint.position, rows, casepoint.casepoint);
+            }
+        }
         if (score==-1) {
             invalidPaths.add(stackToString());
             System.out.println("invalider "+stackToString()+ " scoreDecremental "+this.scoreDecrementalDessai);
-            System.out.println("");
         }
     }
 
-    public List<String> getInvalidPaths() {
-        return this.invalidPaths;
-    }
 
-    public void setInvalidPaths(List<String> invalidPaths) {
-        this.invalidPaths=invalidPaths;
-    }
-
-
-    public boolean isTourneEnRond() {
-        Set set = new HashSet() ;
-        set.addAll(this.invalidPaths) ;
-        return this.invalidPaths.size()!=set.size();
-    }
     @Override
     public boolean equals(Object o)
     {
-        if(this.x==((Ball)o).x && this.y==((Ball)o).y)  return true;
+        if(this.getX()==((Ball)o).getX() && this.getY()==((Ball)o).getY())  return true;
         return false;
     }
 
-    public void resetInvalidPaths() {
-        this.invalidPaths=new ArrayList<>();
-    }
 
     public String imprimeStak() {
         return stackDirection.toString();
@@ -166,22 +143,88 @@ public class Ball {
     @Override
     public String toString() {
         return "Ball{" +
-                "x=" + x +
-                ", y=" + y +
+                "x=" + getX() +
+                ", y=" + getY() +
                 '}';
     }
 
-    public String getAvantDerniereCase() {
-        try {
-            return this.dernierPas.getLast();
-        } catch (Exception e) {
-            return "";
+
+    public void siLacMarqueLac(char identifie) {
+        if (identifie=='X') listeLacs.add(new Trou(this.getX(),this.getY()));
+    }
+    int getX(){
+        return position.x;
+    }
+    void setX(int x){
+        position.x=x;
+    }
+    int getY(){
+        return position.y;
+    }
+    void setY(int y){
+        position.y=y;
+    }
+
+    public void decrementY() {
+        position.y--;
+    }
+
+    public void incrementY() {
+        position.y++;
+    }
+
+    public void decrementX() {
+        position.x--;
+    }
+
+    public void incrementX() {
+        position.x++;
+    }
+
+    protected void ecrireAuPropreLeChemin(List<String> rows, String chemin) {
+        for (int i = 0; i< chemin.length(); i++){
+            String direction= String.valueOf(chemin.charAt(i));
+            ecrireLeChemin(this.position, rows, direction);
+            changeBallPosition(direction);
         }
     }
 
-    public void ajouteHistorique(char identifie) {
-        if (identifie=='X') listeLacs.add(new Trou(this.x,this.y));
-        if (listeLacs.contains(new Trou(this.x,this.y))) identifie='X';
-        this.dernierPas.add(Character.toString(identifie));
+    public void ecrireLeChemin(Position position, List<String> rows, String direction) {
+        rows.set(position.y, changeCharAt( rows.get(position.y), position.x, direction));
+    }
+
+    public void changeBallPosition(String direction) {
+        if (direction.equals(">")) this.incrementX();;
+        if (direction.equals("<")) this.decrementX();
+        if (direction.equals("v")) this.incrementY();
+        if (direction.equals("^")) this.decrementY();
+    }
+
+    public int getIdDirectionForScore() {
+        return idDirectionForScore.get(score);
+    }
+
+    public String getDirectionForScore(List<String> strategieDirections){
+        Integer idDirection = idDirectionForScore.get(score);
+        return strategieDirections.get(idDirection);
+    }
+
+    public void incrementIdDirectionForScore() {
+        idDirectionForScore.set(score,idDirectionForScore.get(score)+1);
+    }
+
+    public void initIDDirectionForScores(List<String> strategieDirections) {
+        IntStream.range(0, score+1).forEach(s->{
+            idDirectionForScore.add(0);
+        });
+        this.limiteStrategieDirection = strategieDirections.size();
+    }
+
+    public boolean isToutesLesDirectonsOntJouePourCeScore() {
+        return getIdDirectionForScore()==this.limiteStrategieDirection;
+    }
+
+    public void resetIdDirectionForScore() {
+        idDirectionForScore.set(score,0);
     }
 }

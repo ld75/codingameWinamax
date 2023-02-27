@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public abstract class CombinaisonBlock<T,U,R> {
     public T prefix=instancieNewPrefix();
@@ -43,14 +44,15 @@ public abstract class CombinaisonBlock<T,U,R> {
         List<CombinaisonBlock> resultatFinal = new ArrayList<>();
         resultatFinal.add(this);
         int previousSize =0;
-        while (resultatFinal.size()!=previousSize){
+        int factorielNbDeCombi = IntStream.range(1,this.reste.size()+1).reduce((carry,elt)->elt*carry).getAsInt();
+        while (resultatFinal.size()!=factorielNbDeCombi){
             int iterateur=0;
             previousSize=resultatFinal.size();
             while (iterateur<previousSize) {
                 CombinaisonBlock parent = resultatFinal.get(0);
                 resultatFinal.remove(parent);
                 resultatFinal.addAll(parent.combiner());
-                iterateur++;
+                 iterateur++;
             }
         }
         return resultatFinal;

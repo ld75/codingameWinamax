@@ -12,7 +12,7 @@ public class CoupleBalleTrou {
 
     @Override
         public String toString() {
-            return "CoupleBalleTrou{balle=" + balle.x +","+balle.y+",trou=" + trou.x+","+trou.y +'}';
+            return "CoupleBalleTrou{balle=" + balle.getX() +","+balle.getY()+",trou=" + trou.getX()+","+trou.getY() +'}';
         }
 
     @Override

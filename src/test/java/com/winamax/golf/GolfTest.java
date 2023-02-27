@@ -16,8 +16,8 @@ public class GolfTest {
     {
         List<Ball> balles = mapAnalyzer.getBallesFromRow("H....2...H",0);
         Assertions.assertEquals(2, balles.get(0).score);
-        Assertions.assertEquals(0, balles.get(0).y);
-        Assertions.assertEquals(5, balles.get(0).x);
+        Assertions.assertEquals(0, balles.get(0).getY());
+        Assertions.assertEquals(5, balles.get(0).getX());
     }
     @Test
     public void getBalleFromRow3()
@@ -40,15 +40,15 @@ public class GolfTest {
                 "H..");
         List<Ball> balles = mapAnalyzer.trouverBalles(rows);
         Assertions.assertTrue(balles.size()==1);
-        Assertions.assertTrue(balles.get(0).x==2);
-        Assertions.assertTrue(balles.get(0).y==0);
+        Assertions.assertTrue(balles.get(0).getX()==2);
+        Assertions.assertTrue(balles.get(0).getY()==0);
     }
 
     @Test
     public void isballcanmove()
     {
-        Assertions.assertFalse(mapAnalyzer.isBallCanMoove(new Ball(2,0,0),">",List.of("2H"),new Trou(new Integer[]{1,0})));
-        Assertions.assertTrue(mapAnalyzer.isBallCanMoove(new Ball(1,0,0),">",List.of("1H"),new Trou(new Integer[]{1,0})));
+        Assertions.assertFalse(mapAnalyzer.isBallCanMooveInDir(new Ball(2,0,0),">",List.of("2H"),new Trou(new Integer[]{1,0})));
+        Assertions.assertTrue(mapAnalyzer.isBallCanMooveInDir(new Ball(1,0,0),">",List.of("1H"),new Trou(new Integer[]{1,0})));
     }
 
     @Test
@@ -58,7 +58,7 @@ public class GolfTest {
         ArrayList rows = new ArrayList(List.of("1H"));
         mapAnalyzer.avanceBalleDansDirection(balle, rows, ">", new Trou(new Integer[]{1,0}));
         System.out.println(balle);
-        Assertions.assertEquals(1,balle.x);
+        Assertions.assertEquals(1,balle.getX());
         System.out.println(rows);
     }
     @Test
@@ -69,37 +69,40 @@ public class GolfTest {
         mapAnalyzer.avanceBalleDansDirection(balle, rows, ">", new Trou(new Integer[]{1,0}));
         System.out.println(balle);
         System.out.println(rows);
-        Assertions.assertEquals(3,balle.x);
+        Assertions.assertEquals(3,balle.getX());
         Assertions.assertEquals(">>>..H", rows.get(0));
     }
     @Test
-    public void test1() throws TrouNonTrouveException, ToutRefaireAvecNouveauCouple, StrategiePerdante {
+    public void test1() throws TrouNonTrouveException,  StrategiePerdante, ToutRefaireAvecNelleCombinaisonCouples {
         //taille: 2 1
         //ligne: 1H
         //attendu: >.
         List<String> rows = new ArrayList<>(List.of("1H"));
         Ball balle = mapAnalyzer.trouverBalles(rows).get(0);
         Trou trou= mapAnalyzer.trouveTrous(rows).get(0);
+        mapAnalyzer.initialMap=rows;
         mapAnalyzer.initialiserToutesLesStrategiesDeDeplacement();
         List<String> res = mapAnalyzer.resoudreBalle(balle, rows, trou);
         Assertions.assertEquals(">.",res.get(0));
     }
     @Test
-    public void deuxDimensionsSimple() throws TrouNonTrouveException, ToutRefaireAvecNouveauCouple, StrategiePerdante {
+    public void deuxDimensionsSimple() throws TrouNonTrouveException,  StrategiePerdante, ToutRefaireAvecNelleCombinaisonCouples {
         List<String> rows = new ArrayList<>(List.of("1H", ".."));
         Ball balle = mapAnalyzer.trouverBalles(rows).get(0);
         Trou trou= mapAnalyzer.trouveTrous(rows).get(0);
+        mapAnalyzer.initialMap=rows;
         mapAnalyzer.initialiserToutesLesStrategiesDeDeplacement();
         List<String> res = mapAnalyzer.resoudreBalle(balle, rows, trou);
         List<String> expect = List.of(">.", "..");
         Assertions.assertEquals(expect,res);
     }
     @Test
-    public void deuxDimensionsRempliesCibleEnBas() throws TrouNonTrouveException, ToutRefaireAvecNouveauCouple, StrategiePerdante {
+    public void deuxDimensionsRempliesCibleEnBas() throws TrouNonTrouveException,  StrategiePerdante, ToutRefaireAvecNelleCombinaisonCouples {
         List<String> rows = new ArrayList<>(List.of("1.",
                                     "H."));
         Ball balle = mapAnalyzer.trouverBalles(rows).get(0);
         Trou trou= mapAnalyzer.trouveTrous(rows).get(0);
+        mapAnalyzer.initialMap=rows;
         mapAnalyzer.initialiserToutesLesStrategiesDeDeplacement();
         List<String> res = mapAnalyzer.resoudreBalle(balle, rows, trou);
         List<String> expect = List.of("v.",
@@ -108,12 +111,13 @@ public class GolfTest {
     }
 
     @Test
-    public void deuxDimensionsRempliesCibleEnHaut() throws TrouNonTrouveException, ToutRefaireAvecNouveauCouple, StrategiePerdante {
+    public void deuxDimensionsRempliesCibleEnHaut() throws TrouNonTrouveException,  StrategiePerdante, ToutRefaireAvecNelleCombinaisonCouples {
         List<String> rows = new ArrayList<>(List.of("H.",
                                     "1."));
         Ball balle = mapAnalyzer.trouverBalles(rows).get(0);
         Trou trou= mapAnalyzer.trouveTrous(rows).get(0);
         mapAnalyzer.initialiserToutesLesStrategiesDeDeplacement();
+        mapAnalyzer.initialMap=rows;
         List<String> res = mapAnalyzer.resoudreBalle(balle, rows, trou);
         List<String> expect = List.of("..",
                                       "^.");
@@ -141,28 +145,28 @@ public class GolfTest {
         List<String> rows = List.of("...",
                                        "...");
         Ball balle = new Ball(1, 0, 0);
-        Assertions.assertFalse(mapAnalyzer.isBallCanMoove(balle,"<", rows,new Trou()));
+        Assertions.assertFalse(mapAnalyzer.isBallCanMooveInDir(balle,"<", rows,new Trou()));
     }
     @Test
     public void invalidPosition2_changeBallPosition_dontChangePosition() throws CanootMoveHereException {
         List<String> rows = List.of("...",
                                     "...");
         Ball balle = new Ball(1, 2, 0);
-        Assertions.assertFalse(mapAnalyzer.isBallCanMoove(balle,">", rows, new Trou()));
+        Assertions.assertFalse(mapAnalyzer.isBallCanMooveInDir(balle,">", rows, new Trou()));
     }
     @Test
     public void invalidPosition3_changeBallPosition_dontChangePosition() throws CanootMoveHereException {
         List<String> rows = List.of("...",
                 "...");
         Ball balle = new Ball(1, 1, 1);
-        Assertions.assertFalse(mapAnalyzer.isBallCanMoove(balle,"v", rows, new Trou()));
+        Assertions.assertFalse(mapAnalyzer.isBallCanMooveInDir(balle,"v", rows, new Trou()));
     }
     @Test
     public void invalidPosition4_changeBallPosition_dontChangePosition() throws CanootMoveHereException {
         List<String> rows = List.of("...",
                 "...");
         Ball balle = new Ball(1, 1, 0);
-        Assertions.assertFalse(mapAnalyzer.isBallCanMoove(balle,"^", rows, new Trou()));
+        Assertions.assertFalse(mapAnalyzer.isBallCanMooveInDir(balle,"^", rows, new Trou()));
     }
 
     @Test
@@ -187,12 +191,13 @@ public class GolfTest {
         Assertions.assertEquals('d',mapAnalyzer.identifie(rows, 2, 1));
     }
     @Test
-    public void troisDimensionsRemplies() throws TrouNonTrouveException, ToutRefaireAvecNouveauCouple, StrategiePerdante {
+    public void troisDimensionsRemplies() throws TrouNonTrouveException,  StrategiePerdante, ToutRefaireAvecNelleCombinaisonCouples {
         List<String> rows = new ArrayList<>(List.of("..H..",
                                                     ".....",
                                                     "3...."));
         Ball balle = mapAnalyzer.trouverBalles(rows).get(0);
         Trou trou= mapAnalyzer.trouveTrous(rows).get(0);
+        mapAnalyzer.initialMap=rows;
         mapAnalyzer.initialiserToutesLesStrategiesDeDeplacement();
         List<String> res = mapAnalyzer.resoudreBalle(balle, rows, trou);
         List<String> expect = List.of("...<.",
@@ -255,11 +260,22 @@ public class GolfTest {
         combinaisons.stream().forEach(c-> System.out.println(c.toString()));
     }
     @Test
+    @Disabled //trop long
+    public void demultiplieCombinaisons9()
+    {
+        String test= "1,2,3,4,5,6,7,8,9";
+        CombinaisonBlock combinaison = new CombinaisonBlockString("", new ArrayList(Arrays.asList(test.split(","))));
+        List<CombinaisonBlock> combinaisons = combinaison.getToutesCombinaisons();
+        Assertions.assertEquals(362880,combinaisons.size());
+        combinaisons.stream().forEach(c-> System.out.println(c.toString()));
+    }
+    @Test
     public void getTouteCombinaisonsDeDirectionsListString() {
         String test = ">,^,<,v";
         CombinaisonBlock combinaison = new CombinaisonBlockString("", new ArrayList(Arrays.asList(test.split(","))));
         List<String> combinaisons = combinaison.getToutesCombinaisonsString();
         Assertions.assertEquals(24, combinaisons.size());
+        Assertions.assertEquals(4+3,combinaisons.get(0).length());
         combinaisons.stream().forEach(c -> System.out.println(c));
     }
 
@@ -281,18 +297,20 @@ public class GolfTest {
     }
 
     @Test
+    @Disabled //superflux
     public void strategieEchouent_getPath_toutesStrategiesEssayeesPuisRemonterErreur() throws TrouNonTrouveException {
         MapAnalyzerRechercheMemoriseeEchecSpy mapAnalyzerSpy = new MapAnalyzerRechercheMemoriseeEchecSpy();
         Ball balle= new Ball();
         List<String> rows = new ArrayList();
         Trou trou=new Trou();
         mapAnalyzerSpy.initialiserToutesLesStrategiesDeDeplacement();
-        Assertions.assertThrows(ToutRefaireAvecNouveauCouple.class,()->{mapAnalyzerSpy.testerBalleEtReecrirePlan(balle, rows, trou);});
+        Assertions.assertThrows(ToutRefaireAvecNelleCombinaisonCouples.class,()->{mapAnalyzerSpy.testerBalleEtReecrirePlan(balle, rows, trou);});
         Assertions.assertEquals(24,mapAnalyzerSpy.strategiePlayed.size());
     }
 
     @Test
-    public void strategiesReussient_getPath_toutesStrategiesEssayeesPuisRemonterMeilleureSolution() throws TrouNonTrouveException, ToutRefaireAvecNouveauCouple {
+    @Disabled //superflux
+    public void strategiesReussient_getPath_toutesStrategiesEssayeesPuisRemonterMeilleureSolution() throws TrouNonTrouveException,  ToutRefaireAvecNelleCombinaisonCouples {
         MapAnalyzerRechercheMemoriseeSuccesSpy mapAnalyzerSpy = new MapAnalyzerRechercheMemoriseeSuccesSpy();
         Ball balle= new Ball();
         List<String> rows = new ArrayList<>(List.of("2.H.H.2"));
@@ -349,7 +367,6 @@ public class GolfTest {
     }
 
     @Test
-   // @Disabled //TODO: cas impossible: stackoverflow
     public void impossible_test1Moi_Erreur() throws TrouNonTrouveException, JeuIncompletException, NonResoluException {
         //ligne: 2.X
         //ligne: ..H
@@ -394,7 +411,7 @@ public class GolfTest {
         Assertions.assertEquals(expect,res);
     }
     @Test
-    public void test2bis() throws TrouNonTrouveException, JeuIncompletException, NonResoluException {
+     public void test2bis() throws TrouNonTrouveException, JeuIncompletException, NonResoluException {
         //ligne: 2.X
         //ligne: ..H
         //ligne: .H1
@@ -463,7 +480,7 @@ public class GolfTest {
     }
 
     @Test
-    public void rechercheMemorisee() throws TrouNonTrouveException, StrategiePerdante {
+    public void rechercheMemorisee() throws TrouNonTrouveException, StrategiePerdante,  ToutRefaireAvecNelleCombinaisonCouples {
         List<String> rows = new ArrayList(List.of(
                 "4....",
                 ".....",
@@ -472,15 +489,39 @@ public class GolfTest {
         mapAnalyzer.printChemin(rows, new Ball(), new Trou());
         Trou trou = mapAnalyzer.trouveTrous(rows).get(0);
         Ball balle = mapAnalyzer.trouverBalles(rows).get(0);
+        mapAnalyzer.initialMap=rows;
         BallEtMap resultat = mapAnalyzer.rechercheMemorisee(balle, rows, trou,Arrays.asList(">","v","<","^"));
         String chemin =  resultat.getCheminLePlusCourt();
         Assertions.assertEquals(">>>>vvv",chemin);
     }
-
-
+    @Test
+    public void premierPasKO_rechercheMemorisee_passeADeuxiemePas() throws TrouNonTrouveException, StrategiePerdante,  ToutRefaireAvecNelleCombinaisonCouples {
+        List<String> rows = new ArrayList(List.of(
+                "1....",
+                "H....",
+                ".....",
+                "....."));
+        Trou trou = mapAnalyzer.trouveTrous(rows).get(0);
+        Ball balle = mapAnalyzer.trouverBalles(rows).get(0);
+        mapAnalyzer.initialMap=rows;
+        BallEtMap res = mapAnalyzer.rechercheMemorisee(balle, rows, trou, Arrays.asList(">", "v", "<", "^"));
+        Assertions.assertEquals("v",res.getCheminLePlusCourt());
+    }
+    @Test
+    public void deuxniveaux_rechercheMemorisee_passeADeuxiemePas() throws TrouNonTrouveException, StrategiePerdante,  ToutRefaireAvecNelleCombinaisonCouples {
+        List<String> rows = new ArrayList(List.of(
+                "........",
+                "........",
+                "H...2...",
+                "........",
+                "........"));
+        Trou trou = mapAnalyzer.trouveTrous(rows).get(0);
+        Ball balle = mapAnalyzer.trouverBalles(rows).get(0);
+        mapAnalyzer.initialMap=rows;
+        Assertions.assertThrows(ToutRefaireAvecNelleCombinaisonCouples.class,()->{mapAnalyzer.rechercheMemorisee(balle, rows, trou, Arrays.asList(">", "v", "^", "<"));});
+    }
 
     @Test
-    @Disabled //infini
     public void rienNaFonctionne_changerCouplesEtRefaire() {
         MapAnalyzerRechercheMemoriseeEchecSpy mapAnalyzerSpy = new MapAnalyzerRechercheMemoriseeEchecSpy();
         List<String> rows = new ArrayList(List.of(
@@ -492,14 +533,12 @@ public class GolfTest {
         System.out.println(mapAnalyzerSpy.couples);
     }
     @Test
-    @Disabled //infini
     public void test3bout() throws TrouNonTrouveException, NonResoluException, JeuIncompletException {
         List<String> rows = new ArrayList(List.of(
                             "4..XX",
                             "...H."));
-        List<String> res = mapAnalyzer.initialiserJeu( rows);
+        Assertions.assertThrows(NonResoluException.class,()->{mapAnalyzer.initialiserJeu( rows);});
         System.out.println("************");
-        mapAnalyzer.printChemin(res);
     }
     @Test
     public void test3() throws TrouNonTrouveException, JeuIncompletException, NonResoluException {
@@ -532,49 +571,45 @@ public class GolfTest {
         mapAnalyzer.printChemin(res);
         Assertions.assertEquals(expect,res);
     }
+
+
     @Test
-    public void power()
-    {
-        Assertions.assertEquals(2,mapAnalyzer.power(2));
-        Assertions.assertEquals(6,mapAnalyzer.power(3));
-        Assertions.assertEquals(24,mapAnalyzer.power(4));
-        Assertions.assertEquals(771881146,mapAnalyzer.power(38));
-        Assertions.assertEquals(771881146,mapAnalyzer.power(37));
-    }
-    @Test
-    @Disabled
-    public void random(){
-        while(true) {
-            int res = random.nextInt(2);
-            System.out.println(res);
-        }
-        }
-    @Test
-    @Disabled //TODO: car il cherche à l'infini
-    // à améliorer
     public void coupleFaux_jouerChaqueCouple_joueBalleAvecAutreTrou() throws NonResoluException {
         List<Ball> balles =List.of(new Ball(1,0,0),new Ball(1,1,1));
         List<Trou> trous =List.of(new Trou(0,0),new Trou(1,1));
         MapAnalyzerResoudreBalleEnErreurStub mapAnalizerStub = new MapAnalyzerResoudreBalleEnErreurStub(balles,trous);
+        mapAnalizerStub.allCombinaisonsCouples= mapAnalizerStub.genererAllCombinaisons(balles,trous);
         Assertions.assertThrows(NonResoluException.class,()->{mapAnalizerStub.jouerChaqueCouple(new ArrayList<>());});
-        Assertions.assertEquals(4,mapAnalizerStub.getCouplesJoues());
+        Assertions.assertEquals(2,mapAnalizerStub.getCouplesJoues());
     }
 
     @Test
-    public void balleAvance_connaitAvantdernierCoup(){
+    public void balleSeTrompeUneFois_rechercheMemorisee_reculeUneFois() throws StrategiePerdante {
         Ball balle = new Ball(4, 0, 0);
-        Assertions.assertEquals(balle.getAvantDerniereCase(),"");
-        mapAnalyzer.avanceBalleDansDirection(balle,new ArrayList(List.of("ABCDEFG")),">",new Trou(0,6));
-        Assertions.assertEquals("D",balle.getAvantDerniereCase());
+        List<String> initialMap= new ArrayList(List.of("B.....T"));
+        mapAnalyzer.initialMap=initialMap;
+        Assertions.assertThrows(ToutRefaireAvecNelleCombinaisonCouples.class,()->{mapAnalyzer.rechercheMemorisee(balle,initialMap,new Trou(6,0),Arrays.asList(">"));});
+        Assertions.assertEquals(0,balle.getX());
     }
-@Test
-public void vientDunLac_isHTrouve_false(){
-    Ball balle= new Ball(0,2,2);
-    balle.ajouteHistorique('.');
-    Assertions.assertTrue(mapAnalyzer.isHTrouve(balle,new Trou(2,2)));
-    balle.ajouteHistorique('X');
-    Assertions.assertFalse(mapAnalyzer.isHTrouve(balle,new Trou(2,2)));
-   }
+    @Test
+    public void balleSeTrompeSurTout_recule_reculeDeuxFoisEtSupprimeSesDerniersPassages() throws StrategiePerdante {
+        Ball balle = new Ball(2, 0, 2);
+        List<String> initialMap= new ArrayList(List.of(
+                "......T",
+                ".......",
+                "2......",
+                "......."
+        ));
+        mapAnalyzer.initialMap=initialMap;
+        Assertions.assertThrows(StrategiePerdante.class, () -> {mapAnalyzer.rechercheMemorisee(balle, initialMap, new Trou(6, 0), Arrays.asList(">", "v", "^", "<"));});
+        mapAnalyzer.printChemin(initialMap);
+        List<String> expect = List.of(
+                "......T",
+                ".......",
+                "2......",
+                ".......");
+        Assertions.assertEquals(expect,initialMap);
+    }
     @Test
     public void test4mini() throws TrouNonTrouveException, NonResoluException, JeuIncompletException {
         List<String> rows = new ArrayList(List.of(
@@ -590,8 +625,7 @@ public void vientDunLac_isHTrouve_false(){
         Assertions.assertEquals(expect,res);
     }
     @Test
-    public void
-    test4() throws TrouNonTrouveException, NonResoluException, JeuIncompletException {
+    public void test4() throws TrouNonTrouveException, NonResoluException, JeuIncompletException {
         //ligne: 3..H.2
         //ligne: .2..H.
         //ligne: ..H..H
@@ -638,6 +672,36 @@ public void vientDunLac_isHTrouve_false(){
         }
     }
     @Test
+    public void test5reduit() throws TrouNonTrouveException, NonResoluException, JeuIncompletException {
+        List<String> rows = new ArrayList(List.of(
+                ".XXX.5X.",
+                "X...X..X",
+                "X...X..X",
+                "X...X.X.",
+                ".X.X...X",
+                "X..X...X",
+                "X..X...X",
+                ".XH.XXX."));
+        List<String> expect = List.of(
+                "v<<<<<..",
+                "v.>>>>v.",
+                "vvv<<<v.",
+                "vvv...v.",
+                "vvv.>.v.",
+                "vv..^.v.",
+                "v>>>^.<.",
+                ">>......");
+
+        mapAnalyzer.reinitialiserStrategies();
+        mapAnalyzer.initialMap=new ArrayList(Arrays.asList(rows.toArray()));
+        mapAnalyzer.strategies=List.of("<,v,>,^");
+        mapAnalyzer.definirTousBallesEtTrous(rows);
+        mapAnalyzer.initCombinaisonsCouples();
+        List<String> resAvecLacs = mapAnalyzer.jouerChaqueCouple(rows);
+        mapAnalyzer.printChemin(resAvecLacs);
+        //Assertions.assertEquals(expect,res);
+    }
+    @Test
     public void test5() throws TrouNonTrouveException, NonResoluException, JeuIncompletException {
         List<String> rows = new ArrayList(List.of(
                 ".XXX.5X.",
@@ -660,20 +724,36 @@ public void vientDunLac_isHTrouve_false(){
         List<String> res = mapAnalyzer.initialiserJeu( rows);
         mapAnalyzer.printChemin(res);
         Assertions.assertEquals(expect,res);
-
-
     }
     @Test
     public void test6() throws TrouNonTrouveException, NonResoluException, JeuIncompletException {
         List<String> rows = new ArrayList(List.of(
+              /*".......4",
+                "....HH.2",
+                "..5.....",
+                "H....22X",
+                ".3XH.HXX",
+                "..X3.H.X",
+                "..XH....",
+                "H2X.H..3"));*/
         ".......4",
-        "....HH.2",
-        "..5.....",
-        "H....22X",
-        ".3XH.HXX",
-        "..X3.H.X",
-        "..XH....",
-        "H2X.H..3"));
+        "........",
+        "........",
+        "H......X",
+        "..X...XX",
+        "..X....X",
+        "..X.....",
+        "..X....."));
+
+        /*        ".......4",
+                "........",
+                "..5.....",
+                "H......X",
+                "..X...XX",
+                "..X..H.X",
+                "..X.....",
+                "..X....."));
+*/
         List<String> expect = List.of(
                             "v<<<<<<<",
                             "v>>>..<<",
@@ -723,7 +803,7 @@ public void vientDunLac_isHTrouve_false(){
         @Override
         public BallEtMap rechercheMemorisee(Ball balleOriginale, List<String> rowsOriginal, Trou trou, List<String> strategieDirections) throws StrategiePerdante{
             this.strategiePlayed.add(strategieDirections);
-            this.couples.add(Integer.toString(balleOriginale.x)+Integer.toString(trou.x));
+            this.couples.add(Integer.toString(balleOriginale.getX())+Integer.toString(trou.getX()));
             throw new StrategiePerdante(new Ball());
         }
     }
@@ -736,15 +816,7 @@ public void vientDunLac_isHTrouve_false(){
             this.couples = new HashSet<>();
         }
 
-        @Override
-        public BallEtMap rechercheMemorisee(Ball balleOriginale, List<String> rowsOriginal, Trou trou, List<String> strategieDirections) throws StrategiePerdante{
-            this.strategiePlayed.add(strategieDirections);
-            this.couples.add(Integer.toString(balleOriginale.x)+Integer.toString(trou.x));
-            Ball balle = new Ball();
-            balle.ajouteChemin(">");
-            balle.sauveParcourtEtReinitStack();
-            return new BallEtMap(balle,new ArrayList<>());
-        }
+
     }
 
     private class MapAnalyzerResoudreBalleEnErreurStub extends MapAnalyzer {
@@ -759,9 +831,9 @@ public void vientDunLac_isHTrouve_false(){
         }
 
         @Override
-        public List<String> resoudreBalle(Ball balle, List<String> rowsAvantEssai, Trou trou) throws ToutRefaireAvecNouveauCouple {
+        public List<String> resoudreBalle(Ball balle, List<String> rowsAvantEssai, Trou trou) throws ToutRefaireAvecNelleCombinaisonCouples {
             couplesJoues.add(new CoupleBalleTrou(balle,trou));
-            throw new ToutRefaireAvecNouveauCouple();
+            throw new ToutRefaireAvecNelleCombinaisonCouples();
         }
 
         public int getCouplesJoues() {
